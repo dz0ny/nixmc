@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build .app bundle
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tags for `git describe` versioning
+
+      - name: Show toolchain
+        run: swift --version
+
+      - name: Build bundle
+        run: make app
+
+      - name: Ad-hoc sign
+        run: make sign
+
+      - name: Verify
+        run: |
+          codesign --verify --verbose dist/nixmc.app
+          plutil -lint dist/nixmc.app/Contents/Info.plist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nixmc-app
+          path: dist/nixmc.app
