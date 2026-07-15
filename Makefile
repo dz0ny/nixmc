@@ -113,7 +113,7 @@ release:
 		APPLE_ID="$(APPLE_ID)" TEAM_ID="$(TEAM_ID)" APP_PW="$(APP_PW)"
 
 .PHONY: dmg
-dmg: app
+dmg: sign
 	@echo "==> Packaging $(DIST)/$(APP_NAME).dmg"
 	@rm -f "$(DIST)/$(APP_NAME).dmg"
 	@hdiutil create -volname "$(APP_NAME)" -srcfolder "$(APP)" \
