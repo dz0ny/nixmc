@@ -51,3 +51,20 @@ build with `hb builder repair` followed by `hb builder test`. Use
 required, enable `socktainer` explicitly and set `DOCKER_HOST` only in the
 user’s shell environment; do not replace an existing container runtime without
 the user’s approval.
+
+## Guide
+
+HexBox gives an Apple Silicon Mac an `aarch64-linux` Nix builder without using
+an ephemeral container. Nix reaches the persistent Apple Container machine
+through an SSH proxy, so Linux build outputs and downloaded substitutes survive
+machine stops and starts.
+
+Use `hb builder status` for a quick health check. Run `hb builder repair` if
+the runtime, machine, or SSH connection needs recovery, then use
+`hb builder test` to confirm that remote Nix builds work. `hb builder reset`
+recreates the builder and deletes its guest-local `/nix` store, so use it only
+when a clean builder is intended.
+
+Socktainer is optional. When enabled, it exposes a Docker-compatible socket at
+`~/.socktainer/container.sock`; set `DOCKER_HOST` only for shells that should
+use that socket.

@@ -156,13 +156,14 @@ enum RecipeCatalog {
         else { return nil }
 
         let header = String(normalized[normalized.index(normalized.startIndex, offsetBy: 4)..<end.lowerBound])
-        let rawBody = String(normalized[end.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        let content = String(normalized[end.upperBound...])
+        let rawBody = content.trimmingCharacters(in: .whitespacesAndNewlines)
         let guideMarker = "\n## Guide\n"
         let body: String
         let guide: String?
-        if let marker = rawBody.range(of: guideMarker) {
-            body = String(rawBody[..<marker.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-            guide = String(rawBody[marker.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        if let marker = content.range(of: guideMarker) {
+            body = String(content[..<marker.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            guide = String(content[marker.upperBound...])
         } else {
             body = rawBody
             guide = nil
@@ -180,6 +181,7 @@ enum RecipeCatalog {
         return Recipe(id: values["id"] ?? fallbackID, title: title, section: section,
                       symbol: values["symbol"] ?? "doc.text", summary: summary,
                       featured: values["featured"] == "true", source: values["source"],
-                      guide: guide?.isEmpty == true ? nil : guide, body: body)
+                      guide: guide?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true ? nil : guide,
+                      body: body)
     }
 }

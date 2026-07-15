@@ -77,7 +77,9 @@ enum ConfigGuide {
         sentences: what kind of setup this is and for whom it looks \
         tailored. If a section has nothing configured, write exactly \
         "Nothing configured here yet." as its only content. No preamble \
-        before the first heading, no closing remarks after the last section.
+        before the first heading, no closing remarks after the last section. \
+        Human-authored recipe guide fragments are appended by NixMC after your \
+        output: do not invent, summarize, or reproduce them.
         """
         guard let text = await agent.runReadOnly(instruction: instruction, input: content, cwd: cwd) else {
             return .failure(.agentFailed)
@@ -118,7 +120,9 @@ enum ConfigGuide {
         section ends up with nothing. Copy every other section through \
         byte-for-byte unchanged, including its heading. Output the complete \
         guide — every heading listed above, in order — with no preamble and \
-        no closing remarks.
+        no closing remarks. Human-authored recipe guide fragments are managed \
+        separately by NixMC and are not part of this update; do not add or edit \
+        them.
         """
         let payload = "DIFF:\n\(diff)\n\nGUIDE:\n\(existingText)"
         guard let text = await agent.runReadOnly(instruction: instruction, input: payload, cwd: cwd) else {
@@ -156,24 +160,6 @@ enum ConfigGuide {
         sectionIDs.map { id in
             "## \(id)\n\(sections[id] ?? "Nothing configured here yet.")"
         }.joined(separator: "\n\n") + "\n"
-    }
-
-    static func addingRecipeGuide(_ guide: String, for recipe: Recipe,
-                                  to existing: [String: String]) -> [String: String] {
-        let section = sectionIDs.contains(recipe.section) ? recipe.section : "Overview"
-        let start = "<!-- nixmc:recipe-guide \(recipe.id) -->"
-        let end = "<!-- /nixmc:recipe-guide -->"
-        let block = "\(start)\n### \(recipe.title)\n\(guide.trimmingCharacters(in: .whitespacesAndNewlines))\n\(end)"
-        var updated = existing
-        let current = updated[section] ?? "Nothing configured here yet."
-        if let startRange = current.range(of: start),
-           let endRange = current.range(of: end, range: startRange.upperBound..<current.endIndex) {
-            updated[section] = current.replacingCharacters(in: startRange.lowerBound..<endRange.upperBound, with: block)
-        } else {
-            let base = current == "Nothing configured here yet." ? "" : current + "\n\n"
-            updated[section] = base + block
-        }
-        return updated
     }
 
     private static func valid(_ markdown: String) -> Bool {

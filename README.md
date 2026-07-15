@@ -230,6 +230,14 @@ the app and grouped by the same areas shown in the sidebar. The front matter
 drives the UI; the Markdown body is passed to the selected agent and may contain
 exact Nix snippets, shell commands, or a focused diff.
 
+To include durable human documentation, add a `## Guide` section after the
+recipe body. NixMC never sends that section to the agent. After a successful
+apply, it copies the Markdown verbatim into the configuration repository's
+ignored `.nixmc/recipe-guides/` folder and appends it to the recipe's matching
+section in the tracked `GUIDE.md`. This keeps the final guide shareable while
+preserving the human-authored source whenever NixMC refreshes generated guide
+content.
+
 Recipe pull requests are welcome in
 [the recipes folder](https://github.com/dz0ny/nixmc/tree/main/Sources/nixmc/Resources/recipes),
 especially for well-tested macOS, nix-darwin, and Home Manager workflows with a

@@ -452,6 +452,10 @@ final class AppState: ObservableObject {
         - After you finish, the app builds and validates the flake and shows the \
         user a diff. Do NOT run `darwin-rebuild`, `nix build`, or `nix eval` \
         yourself — just make the edits.
+        - Do not edit `GUIDE.md` or `.nixmc/recipe-guides/`. Recipe guide text is
+        human-authored and NixMC copies it verbatim into its local guide-fragment
+        store, then assembles the final tracked `GUIDE.md` after a successful
+        recipe apply.
         - MCP-NixOS is available as the `nixos` server. Before adding or changing \
         a Nix package, flake input, nix-darwin option, or Home Manager option, \
         use its `nix` tool to verify the exact attribute or option. Use \
@@ -788,7 +792,8 @@ final class AppState: ObservableObject {
             await MainActor.run {
                 switch result {
                 case .success(let text):
-                    self.helpGuide = ConfigGuide.sections(from: text)
+                    self.helpGuide = RecipeGuideStore.combining(
+                        ConfigGuide.sections(from: text), in: repo)
                 case .failure(let error):
                     self.helpGuideError = error.localizedDescription
                 }
@@ -820,25 +825,28 @@ final class AppState: ObservableObject {
         helpGuideLoading = true
         let repo = paths.repoDir
         let before = helpGuide
-        guard let text = await ConfigGuide.update(existing: before, diff: diff, cwd: repo) else {
+        let generatedBefore = RecipeGuideStore.removingBlocks(from: before)
+        guard let text = await ConfigGuide.update(existing: generatedBefore, diff: diff, cwd: repo) else {
             stepOut(step, "Couldn't refresh the guide.")
             finishStep(step, ok: true)
             helpGuideLoading = false
             return
         }
-        let after = ConfigGuide.sections(from: text)
+        let generatedAfter = ConfigGuide.sections(from: text)
+        let after = RecipeGuideStore.combining(generatedAfter, in: repo)
         helpGuide = after
         helpGuideLoading = false
 
         let guideURL = repo.appending(path: "GUIDE.md")
         let previous = try? String(contentsOf: guideURL, encoding: .utf8)
-        guard previous != text else {
+        let combinedText = ConfigGuide.markdown(from: after)
+        guard previous != combinedText else {
             stepOut(step, "Guide unchanged.")
             finishStep(step, ok: true)
             return
         }
-        try? text.write(to: guideURL, atomically: true, encoding: .utf8)
-        let touched = ConfigGuide.sectionIDs.filter { after[$0] != before[$0] }
+        try? combinedText.write(to: guideURL, atomically: true, encoding: .utf8)
+        let touched = ConfigGuide.sectionIDs.filter { generatedAfter[$0] != generatedBefore[$0] }
         stepOut(step, touched.isEmpty ? "Updated GUIDE.md." : "Updated: \(touched.joined(separator: ", ")).")
         finishStep(step, ok: true)
     }
@@ -937,19 +945,21 @@ final class AppState: ObservableObject {
     }
 
     private func copyPendingRecipeGuide() {
-        guard let recipe = pendingRecipeGuide, let guide = recipe.guide else { return }
+        guard let recipe = pendingRecipeGuide, recipe.guide != nil else { return }
         defer { pendingRecipeGuide = nil }
         let guideURL = paths.repoDir.appending(path: "GUIDE.md")
-        var sections = helpGuide
-        if sections.isEmpty, let text = try? String(contentsOf: guideURL, encoding: .utf8) {
-            sections = ConfigGuide.sections(from: text)
-        }
-        sections = ConfigGuide.addingRecipeGuide(guide, for: recipe, to: sections)
-        let text = ConfigGuide.markdown(from: sections)
         do {
+            try RecipeGuideStore.store(recipe, in: paths.repoDir)
+            var sections = helpGuide
+            if sections.isEmpty, let text = try? String(contentsOf: guideURL, encoding: .utf8) {
+                sections = ConfigGuide.sections(from: text)
+            }
+            sections = RecipeGuideStore.combining(
+                RecipeGuideStore.removingBlocks(from: sections), in: paths.repoDir)
+            let text = ConfigGuide.markdown(from: sections)
             try text.write(to: guideURL, atomically: true, encoding: .utf8)
             helpGuide = sections
-            out("Copied \(recipe.title) guide notes to GUIDE.md")
+            out("Stored \(recipe.title) guide notes and assembled GUIDE.md")
         } catch {
             transcript.append(ChatMessage(role: .system,
                 text: "Couldn't update GUIDE.md: \(error.localizedDescription)"))

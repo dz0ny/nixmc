@@ -24,7 +24,7 @@ enum ConfigTemplate {
         "modules/home/shell-environment.nix": emptyModule,
         "modules/home/ai-agents.nix": emptyModule,
         "CLAUDE.md": agentGuide,
-        ".gitignore": "result\nresult-*\n",
+        ".gitignore": "result\nresult-*\n.nixmc/recipe-guides/\n",
     ]
 
     private static let flake = """
@@ -147,5 +147,8 @@ enum ConfigTemplate {
       and `modules/home/shell-environment.nix` or `ai-agents.nix` for user settings.
     - After editing, the app runs `darwin-rebuild build` to validate. Keep changes
       minimal and formatted. If the build fails, read the error and fix it.
+    - Do not edit `GUIDE.md` or `.nixmc/recipe-guides/`. Recipe guide sections are
+      human-authored Markdown; NixMC copies them verbatim after a successful
+      recipe apply and assembles the final `GUIDE.md` itself.
     """
 }
