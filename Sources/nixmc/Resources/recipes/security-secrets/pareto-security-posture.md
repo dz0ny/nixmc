@@ -16,16 +16,26 @@ reduce physical-access, network, and malicious-app risk.
 
 ## Install the checker
 
-Add the Homebrew cask `pareto-security` to
+Add the Homebrew casks `pareto-security` and `privileges` to
 `.nixmc/homebrew/data.json` so the checker itself is installed and upgraded
-with the managed applications. Preserve the existing cask list; do not replace
-it with a one-item array.
+with the managed applications. Privileges supports a least-privilege daily
+workflow for accounts that are normally standard users. Preserve the existing
+cask list; do not replace it with a one-item array.
 
 ```json
 {
-  "casks": ["pareto-security"]
+  "casks": ["pareto-security", "privileges"]
 }
 ```
+
+## Use Privileges only with an explicit admin policy
+
+Installing Privileges does not change account membership or grant anyone admin
+rights. If the user wants to work day-to-day as a standard user, configure
+Privileges through the organization’s documented policy or MDM workflow and
+test that an administrator recovery path exists first. Do not remove the
+current user from the `admin` group, enable automatic elevation, or put an
+administrator credential in this repository as part of this recipe.
 
 ## Configure declaratively
 

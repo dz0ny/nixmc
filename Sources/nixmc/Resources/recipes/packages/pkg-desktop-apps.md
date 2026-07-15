@@ -21,6 +21,7 @@ cask names in `.nixmc/homebrew/data.json`:
     "ghostty",
     "localsend",
     "pareto-security",
+    "privileges",
     "proton-pass",
     "raycast",
     "rectangle",

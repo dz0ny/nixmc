@@ -22,6 +22,7 @@ casks and preserve the existing activation policy.
     "ghostty",
     "localsend",
     "pareto-security",
+    "privileges",
     "proton-pass",
     "raycast",
     "rectangle",
