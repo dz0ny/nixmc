@@ -5,6 +5,9 @@ on:
     types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 # Signs with a Developer ID cert, notarizes, staples, and attaches the DMG
 # to the GitHub Release. Requires these repository secrets:
 #   MACOS_CERT_P12        base64 of your "Developer ID Application" .p12
