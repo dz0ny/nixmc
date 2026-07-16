@@ -677,6 +677,9 @@ struct ContentView: View {
                 Divider().opacity(0.5)
             }
             transcriptView
+            if !app.queuedMessages.isEmpty {
+                queuedMessages
+            }
             if app.pending && !app.busy {
                 Divider().opacity(0.5)
                 pendingBar
@@ -687,6 +690,9 @@ struct ContentView: View {
         .background(Color(nsColor: .windowBackgroundColor))
         .onChange(of: app.busy) { _, busy in
             if !busy { DispatchQueue.main.async { inputFocused = true } }
+        }
+        .onExitCommand {
+            if app.canStop { app.stop() }
         }
         .task { inputFocused = true }
     }
@@ -818,16 +824,64 @@ struct ContentView: View {
 
     private var inputBar: ComposerBar {
         ComposerBar(draft: $draft, focused: $inputFocused, busy: app.busy, canStop: app.canStop,
-                    onSubmit: submit, onStop: { app.stop() })
+                    queueCount: app.queuedMessages.count, onSubmit: submit,
+                    onQueue: queueDraft, onStop: { app.stop() })
     }
 
     private func submit() {
         let p = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !p.isEmpty, !app.busy else { return }
+        guard !p.isEmpty else { return }
         draft = ""
         showPackages = false
         selectedArea = nil
-        app.send(p)
+        if app.busy {
+            app.enqueue(p)
+        } else {
+            app.send(p)
+        }
+    }
+
+    private func queueDraft() {
+        let p = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !p.isEmpty else { return }
+        draft = ""
+        app.enqueue(p)
+    }
+
+    private var queuedMessages: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("Queued messages (\(app.queuedMessages.count))", systemImage: "text.line.first.and.arrowtriangle.forward")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                if !app.busy {
+                    Button("Send next") { app.resumeQueuedMessages() }
+                        .controlSize(.small)
+                }
+            }
+            ForEach(app.queuedMessages) { message in
+                HStack(spacing: 8) {
+                    Image(systemName: "line.3.horizontal")
+                        .foregroundStyle(.secondary)
+                    TextField("Queued message", text: Binding(
+                        get: { message.text },
+                        set: { app.updateQueuedMessage(message.id, text: $0) }), axis: .vertical)
+                        .textFieldStyle(.plain)
+                        .lineLimit(1...3)
+                    Button(role: .destructive) { app.removeQueuedMessage(message.id) } label: {
+                        Image(systemName: "trash")
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Remove queued message")
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(Theme.brandSoft.opacity(0.38))
     }
 
     @ViewBuilder
@@ -1096,7 +1150,9 @@ struct ComposerBar: View {
     var focused: FocusState<Bool>.Binding
     var busy: Bool
     var canStop: Bool
+    var queueCount: Int
     let onSubmit: () -> Void
+    let onQueue: () -> Void
     let onStop: () -> Void
 
     var body: some View {
@@ -1118,6 +1174,14 @@ struct ComposerBar: View {
             .contentShape(Rectangle())
             .onTapGesture { focused.wrappedValue = true }
             .animation(.easeOut(duration: 0.12), value: focused.wrappedValue)
+
+            Button(action: onQueue) {
+                Image(systemName: "text.badge.plus")
+                    .frame(width: 16)
+            }
+            .buttonStyle(.bordered)
+            .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .help(queueCount > 0 ? "Add to queue (\(queueCount) waiting)" : "Add to queue")
 
             if busy && canStop {
                 Button(action: onStop) {

@@ -19,6 +19,14 @@ struct ChatMessage: Identifiable {
     var recipe: Recipe? = nil
 }
 
+/// A user-authored request waiting for the current chat operation to finish.
+/// Queued prompts stay local to the conversation so they can be corrected or
+/// removed before an agent receives them.
+struct QueuedChatMessage: Identifiable {
+    let id = UUID()
+    var text: String
+}
+
 enum Phase: String {
     case checking = "Checking environment…"
     case needsNix = "Nix not installed"
@@ -39,6 +47,7 @@ final class AppState: ObservableObject {
     @Published var activity = ""
     @Published var log: [String] = []
     @Published var transcript: [ChatMessage] = []
+    @Published var queuedMessages: [QueuedChatMessage] = []
     @Published var commits: [Git.Commit] = []
     /// Cached AI summary for each commit's diff, keyed by commit id — populated
     /// lazily (cache-only, no agent calls) alongside `commits`, and used to
@@ -456,6 +465,17 @@ final class AppState: ObservableObject {
         human-authored and NixMC copies it verbatim into its local guide-fragment
         store, then assembles the final tracked `GUIDE.md` after a successful
         recipe apply.
+        - Recipe-authoring skill: when asked to create or share a recipe, author
+        a self-contained Markdown recipe rather than applying the change directly.
+        Use YAML front matter with `id`, `title`, `section`, `symbol`, `summary`,
+        `featured`, and a primary `source`; follow it with a concrete,
+        implementation-oriented body. Choose one of NixMC's Configure section
+        names exactly. Verify Nix attributes and macOS options first, avoid
+        machine-specific paths or secrets, and add a `## Guide` section only when
+        the user supplies or explicitly approves human-authored documentation.
+        Do not generate, rewrite, or summarize that guide text. Save a requested
+        shared recipe in the configured team recipe repository when available;
+        otherwise return the complete Markdown for the user to place there.
         - MCP-NixOS is available as the `nixos` server. Before adding or changing \
         a Nix package, flake input, nix-darwin option, or Home Manager option, \
         use its `nix` tool to verify the exact attribute or option. Use \
@@ -554,6 +574,38 @@ final class AppState: ObservableObject {
                 }
             }
         }
+    }
+
+    /// Add a request for delivery after the current agent/build operation.
+    func enqueue(_ prompt: String) {
+        let text = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        queuedMessages.append(QueuedChatMessage(text: text))
+    }
+
+    func updateQueuedMessage(_ id: UUID, text: String) {
+        guard let index = queuedMessages.firstIndex(where: { $0.id == id }) else { return }
+        queuedMessages[index].text = text
+    }
+
+    func removeQueuedMessage(_ id: UUID) {
+        queuedMessages.removeAll { $0.id == id }
+    }
+
+    /// Resume delivery after the user cancelled a running chat operation.
+    func resumeQueuedMessages() {
+        stopped = false
+        sendNextQueuedMessageIfPossible()
+    }
+
+    private func sendNextQueuedMessageIfPossible() {
+        guard !busy, !stopped, selectedAgent != nil, !queuedMessages.isEmpty else { return }
+        let next = queuedMessages.removeFirst()
+        guard !next.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            sendNextQueuedMessageIfPossible()
+            return
+        }
+        send(next.text)
     }
 
     private func buildThenOfferApply(reason: String) async {
@@ -1238,6 +1290,7 @@ final class AppState: ObservableObject {
         Task {
             await work()
             self.busy = false
+            self.sendNextQueuedMessageIfPossible()
         }
     }
 }

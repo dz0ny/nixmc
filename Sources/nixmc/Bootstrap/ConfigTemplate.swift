@@ -150,5 +150,12 @@ enum ConfigTemplate {
     - Do not edit `GUIDE.md` or `.nixmc/recipe-guides/`. Recipe guide sections are
       human-authored Markdown; NixMC copies them verbatim after a successful
       recipe apply and assembles the final `GUIDE.md` itself.
+    - Recipe-authoring skill: when asked to create or share a recipe, write a
+      self-contained Markdown recipe instead of applying the change directly.
+      Include `id`, `title`, `section`, `symbol`, `summary`, `featured`, and
+      `source` front matter, then a concrete implementation body. Use an exact
+      NixMC Configure section name, verify Nix/macOS options, and avoid secrets
+      and machine-specific paths. A `## Guide` section is human-authored only:
+      add it only with user-supplied or approved text and never rewrite it.
     """
 }
