@@ -104,6 +104,12 @@ private struct MenuBarContent: View {
             Label("Check for updates", systemImage: "arrow.triangle.2.circlepath")
         }
             .disabled(app.phase != .ready || app.updateChecking)
+        if let update = app.appUpdate {
+            Button { app.installAppUpdate() } label: {
+                Label("Update NixMC to \(update.tagName)", systemImage: "arrow.down.circle")
+            }
+                .disabled(app.appUpdating)
+        }
         Divider()
         Button(action: showSettings) {
             Label("Settings…", systemImage: "gearshape")

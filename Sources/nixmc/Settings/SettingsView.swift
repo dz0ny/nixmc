@@ -389,9 +389,44 @@ private struct UpdateSettingsPane: View {
                 }
                 .disabled(app.phase != .ready || app.updateChecking)
             }
+
+            Section("Application") {
+                Toggle("Check for new NixMC versions automatically", isOn: $settings.autoSelfUpdate)
+
+                LabeledContent("Installed version", value: installedVersion)
+
+                if let update = app.appUpdate {
+                    LabeledContent("Available version", value: update.tagName)
+
+                    Button {
+                        app.installAppUpdate()
+                    } label: {
+                        Label(app.appUpdating ? "Updating…" : "Install and Relaunch",
+                              systemImage: "arrow.down.circle")
+                    }
+                    .disabled(app.appUpdating)
+                } else {
+                    Button {
+                        Task { await app.checkForAppUpdate() }
+                    } label: {
+                        Label("Check for App Update", systemImage: "arrow.clockwise")
+                    }
+                    .disabled(!SelfUpdater.isBundled)
+                }
+
+                if let error = app.appUpdateError {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
+            }
         }
         .formStyle(.grouped)
-        .frame(height: 390)
+        .frame(height: 560)
+    }
+
+    private var installedVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev build"
     }
 
     private var lastChecked: String {

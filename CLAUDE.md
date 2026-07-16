@@ -38,7 +38,7 @@ Sources/nixmc/
 ├─ Privileged/AdminShell   # osascript "with administrator privileges"
 ├─ Settings/               # AppSettings (all tunables) + Settings window (⌘,) UI
 ├─ Support/{Shell,Paths}   # Process wrapper + path/PATH resolution
-├─ Updates/                # background flake-update checks + parked proposals
+├─ Updates/                # background flake-update checks + parked proposals + app self-update
 └─ UI/                     # AppState (view model) + SwiftUI screens
 ```
 

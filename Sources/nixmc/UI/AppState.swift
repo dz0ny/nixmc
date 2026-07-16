@@ -133,6 +133,13 @@ final class AppState: ObservableObject {
     private let updateScheduler = UpdateScheduler()
     private var schedulerStarted = false
     private var updatesStoreLoaded = false
+
+    /// A newer nixmc release than the running app (nil = up to date).
+    @Published var appUpdate: SelfUpdater.Release?
+    /// True while downloading/installing the app update.
+    @Published var appUpdating = false
+    @Published var appUpdateError: String?
+    private var selfUpdateCheckedAtLaunch = false
     var isUpdateDue: Bool {
         lastUpdateCheck.map { Date.now.timeIntervalSince($0) >= settings.updateCadence.seconds } ?? true
     }
@@ -205,7 +212,7 @@ final class AppState: ObservableObject {
     var menuBarStatus: MenuBarStatus {
         if busy || updateChecking { return .working }
         if buildFailed || pending { return .reviewNeeded }
-        if !proposals.isEmpty { return .updateAvailable }
+        if !proposals.isEmpty || appUpdate != nil { return .updateAvailable }
         if phase != .ready { return .attentionNeeded }
         return .idle
     }
@@ -231,6 +238,7 @@ final class AppState: ObservableObject {
             loadHomebrew()
             loadUpdatesStore()
             startUpdateSchedulerIfNeeded()
+            checkForAppUpdateAtLaunch()
             pending = Git.hasChanges(in: paths.repoDir)
             // Resolve the actual flake attribute (may differ from the host name).
             let fallback = host
@@ -1163,6 +1171,37 @@ final class AppState: ObservableObject {
             fire: { [weak self] in await self?.runUpdateCheck() })
     }
 
+    // MARK: app self-update
+
+    /// One launch-time check, gated by the setting; failures stay silent
+    /// (the next launch or manual check retries).
+    private func checkForAppUpdateAtLaunch() {
+        guard !selfUpdateCheckedAtLaunch else { return }
+        selfUpdateCheckedAtLaunch = true
+        guard settings.autoSelfUpdate else { return }
+        Task { await checkForAppUpdate() }
+    }
+
+    func checkForAppUpdate() async {
+        appUpdate = (try? await SelfUpdater.check()) ?? appUpdate
+    }
+
+    /// Download, verify, and install `appUpdate`; the app relaunches itself
+    /// on success, so this only "returns" on failure.
+    func installAppUpdate() {
+        guard let release = appUpdate, !appUpdating else { return }
+        appUpdating = true
+        appUpdateError = nil
+        Task {
+            do {
+                try await SelfUpdater.installAndRelaunch(release)
+            } catch {
+                appUpdateError = error.localizedDescription
+                appUpdating = false
+            }
+        }
+    }
+
     /// Manual trigger — skips the idle and weekly gates.
     func checkForUpdatesNow() {
         guard phase == .ready, !updateChecking else { return }
@@ -1173,6 +1212,9 @@ final class AppState: ObservableObject {
         guard !updateChecking else { return }
         updateChecking = true
         defer { updateChecking = false }
+        // Long-running sessions piggyback the app's own update check on the
+        // flake cadence; launch-time covers everything shorter.
+        if settings.autoSelfUpdate { await checkForAppUpdate() }
         // Stream into the chat transcript (like build/apply) rather than the
         // bootstrap-only `log`, so the running check is visible wherever the
         // user is, not just on the bootstrap screens.

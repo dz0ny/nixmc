@@ -117,6 +117,8 @@ final class AppSettings: ObservableObject {
 
     /// Master switch for the background flake-update check.
     @Published var autoUpdateChecks: Bool { didSet { d.set(autoUpdateChecks, forKey: K.autoUpdateChecks) } }
+    /// Check GitHub Releases for new nixmc versions in the background.
+    @Published var autoSelfUpdate: Bool { didSet { d.set(autoSelfUpdate, forKey: K.autoSelfUpdate) } }
     @Published var updateCadence: UpdateCadence { didSet { d.set(updateCadence.rawValue, forKey: K.updateCadence) } }
     /// How long the user must be away from mouse/keyboard before a check fires.
     @Published var idleMinutes: Int { didSet { d.set(idleMinutes, forKey: K.idleMinutes) } }
@@ -165,6 +167,7 @@ final class AppSettings: ObservableObject {
         aiCommitMessages = true
         keepGuideUpdated = true
         autoUpdateChecks = true
+        autoSelfUpdate = true
         updateCadence = .weekly
         idleMinutes = 3
         maxProposals = 5
@@ -189,6 +192,7 @@ final class AppSettings: ObservableObject {
         static let aiSummaries = "aiSummaries"
         static let aiCommitMessages = "aiCommitMessages"
         static let keepGuideUpdated = "keepGuideUpdated"
+        static let autoSelfUpdate = "autoSelfUpdate"
         static let autoUpdateChecks = "autoUpdateChecks"
         static let updateCadence = "updateCadence"
         static let idleMinutes = "updateIdleMinutes"
@@ -216,6 +220,7 @@ final class AppSettings: ObservableObject {
             K.aiSummaries: true,
             K.aiCommitMessages: true,
             K.keepGuideUpdated: true,
+            K.autoSelfUpdate: true,
             K.autoUpdateChecks: true,
             K.updateCadence: UpdateCadence.weekly.rawValue,
             K.idleMinutes: 3,
@@ -238,6 +243,7 @@ final class AppSettings: ObservableObject {
         aiCommitMessages = d.bool(forKey: K.aiCommitMessages)
         keepGuideUpdated = d.bool(forKey: K.keepGuideUpdated)
         autoUpdateChecks = d.bool(forKey: K.autoUpdateChecks)
+        autoSelfUpdate = d.bool(forKey: K.autoSelfUpdate)
         updateCadence = UpdateCadence(rawValue: d.string(forKey: K.updateCadence) ?? "") ?? .weekly
         idleMinutes = d.integer(forKey: K.idleMinutes)
         maxProposals = d.integer(forKey: K.maxProposals)

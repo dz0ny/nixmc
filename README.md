@@ -129,6 +129,11 @@ the Mac, so no AI API key is entered into NixMC.
 Check [Releases](https://github.com/dz0ny/nixmc/releases) for a signed
 `nixmc.dmg`. Open the disk image and move `nixmc.app` to Applications.
 
+Once installed, NixMC keeps itself up to date: it checks Releases in the
+background, verifies a downloaded update is signed by the same Developer ID
+before installing it, and offers **Install and Relaunch** in Settings →
+Updates (toggle the automatic check off there if you prefer).
+
 If no signed release is listed, build the current version locally:
 
 ```bash
