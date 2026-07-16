@@ -124,7 +124,7 @@ enum RecipeCatalog {
     }
 
     private static func loadBundled() -> [Recipe] {
-        guard let root = Bundle.module.resourceURL,
+        guard let root = AppResources.bundle.resourceURL,
               let recipes = load(from: root, sectionOverride: nil, idPrefix: "")
         else { return [] }
         return recipes

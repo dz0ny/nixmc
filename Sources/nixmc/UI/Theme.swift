@@ -98,7 +98,7 @@ struct BrandMark: View {
     var size: CGFloat = 22
 
     private var icon: NSImage? {
-        guard let url = Bundle.module.url(forResource: "nixmc-icon", withExtension: "png") else {
+        guard let url = AppResources.bundle.url(forResource: "nixmc-icon", withExtension: "png") else {
             return nil
         }
         return NSImage(contentsOf: url)

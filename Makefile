@@ -54,11 +54,17 @@ $(APP): build Info.plist $(ICON)
 	@cp "$(ICON)" "$(RESOURCES)/AppIcon.icns"
 	@sed 's/__VERSION__/$(VERSION)/g' Info.plist > "$(CONTENTS)/Info.plist"
 	@printf 'APPL????' > "$(CONTENTS)/PkgInfo"
-	@# Bundle any SwiftPM resource bundles alongside the binary
+	@# Keep processed SwiftPM resources in the signed app Resources directory.
 	@for b in "$(BUILD_DIR)"/*.bundle; do \
-		[ -e "$$b" ] && cp -R "$$b" "$(RESOURCES)/" || true; \
+		if [ -e "$$b" ]; then \
+			cp -R "$$b" "$(RESOURCES)/"; \
+		fi; \
 	done
 	@echo "==> Built $(APP)"
+
+.PHONY: verify-resources
+verify-resources:
+	@test -d "$(RESOURCES)/$(APP_NAME)_$(APP_NAME).bundle"
 
 .PHONY: build
 build:

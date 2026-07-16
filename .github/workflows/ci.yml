@@ -28,6 +28,7 @@ jobs:
         run: |
           codesign --verify --verbose dist/nixmc.app
           plutil -lint dist/nixmc.app/Contents/Info.plist
+          make verify-resources
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
