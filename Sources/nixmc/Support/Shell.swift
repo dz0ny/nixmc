@@ -54,6 +54,33 @@ enum NixmcError: LocalizedError {
 /// to reach `nix`, `darwin-rebuild`, `git`, or an agent CLI runs through a login
 /// shell (`zsh -lc`) to pick up the user's real PATH.
 enum Shell {
+    /// Environment for children launched from the app. Finder/LaunchServices
+    /// commonly provide only the macOS system PATH; a login shell is useful for
+    /// user tools, but non-interactive `zsh -lc` does not read `.zshrc`. Add
+    /// the standard Nix profile locations explicitly so NixMC can find Nix
+    /// even when the user's shell setup lives solely in `.zshrc`.
+    private static func childEnvironment(overriding overrides: [String: String]?) -> [String: String] {
+        var environment = ProcessInfo.processInfo.environment
+        if let overrides {
+            environment.merge(overrides) { _, replacement in replacement }
+        }
+
+        let home = FileManager.default.homeDirectoryForCurrentUser.path
+        let nixBinDirectories = [
+            "/nix/var/nix/profiles/default/bin",
+            "/run/current-system/sw/bin",
+            "\(home)/.nix-profile/bin",
+            "/etc/profiles/per-user/\(NSUserName())/bin",
+        ].filter {
+            FileManager.default.fileExists(atPath: $0, isDirectory: nil)
+        }
+        let currentPath = environment["PATH"] ?? "/usr/bin:/bin:/usr/sbin:/sbin"
+        let pathEntries = nixBinDirectories + currentPath.split(separator: ":").map(String.init)
+        environment["PATH"] = Array(NSOrderedSet(array: pathEntries)).compactMap { $0 as? String }
+            .joined(separator: ":")
+        return environment
+    }
+
     /// Run an executable directly to completion, capturing output.
     static func run(_ launchPath: String, _ args: [String],
                     cwd: URL? = nil, env: [String: String]? = nil) throws -> CommandResult {
@@ -61,7 +88,7 @@ enum Shell {
         p.executableURL = URL(fileURLWithPath: launchPath)
         p.arguments = args
         if let cwd { p.currentDirectoryURL = cwd }
-        if let env { p.environment = env }
+        p.environment = childEnvironment(overriding: env)
         p.standardInput = FileHandle.nullDevice
         let out = Pipe(), err = Pipe()
         p.standardOutput = out
@@ -108,6 +135,7 @@ enum Shell {
             p.executableURL = URL(fileURLWithPath: launchPath)
             p.arguments = args
             if let cwd { p.currentDirectoryURL = cwd }
+            p.environment = childEnvironment(overriding: nil)
             // A GUI app inherits an open, TTY-less stdin. Agent CLIs (e.g. claude)
             // detect the non-TTY and block reading stdin instead of acting on the
             // prompt. Feed them the requested input (or /dev/null) so they see EOF.

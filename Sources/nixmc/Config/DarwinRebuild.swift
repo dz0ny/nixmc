@@ -89,6 +89,13 @@ enum DarwinRebuild {
         let home = ProcessInfo.processInfo.environment["HOME"] ?? "/Users/\(user)"
         let sshSock = ProcessInfo.processInfo.environment["SSH_AUTH_SOCK"] ?? ""
         let path = (try? Shell.login("echo $PATH"))?.trimmedOut ?? "/usr/bin:/bin:/usr/sbin:/sbin"
+        // The administrator shell launched by osascript has macOS's minimal
+        // PATH. Resolve nix-env before escalating and invoke that exact binary
+        // below, rather than assuming the root shell inherited the Nix profile.
+        guard let nixEnv = Shell.which("nix-env") else {
+            onLine("switch failed: nix-env was not found on the NixMC user's login-shell PATH")
+            return false
+        }
         let activatePath = "\(storePath)/activate"
         let caskroom = "\(brewPrefix())/Caskroom"
 
@@ -118,7 +125,7 @@ enum DarwinRebuild {
         visudo -cf /etc/sudoers.d/nixmc-pkg-temp >/dev/null
 
         {
-            nix-env -p /nix/var/nix/profiles/system --set "$SYSTEM_PATH"
+            \(shQuote(nixEnv)) -p /nix/var/nix/profiles/system --set "$SYSTEM_PATH"
             export PATH=\(shQuote(path))
             export HOME=\(shQuote(home))
             export SSH_AUTH_SOCK=\(shQuote(sshSock))
