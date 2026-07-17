@@ -185,12 +185,39 @@ struct ContentView: View {
         .background(.thinMaterial)
         .frame(minWidth: 250)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            SettingsLink {
-                Label("Settings", systemImage: "gearshape")
-                    .font(.callout)
+            HStack(spacing: 8) {
+                SettingsLink {
+                    Label("Settings", systemImage: "gearshape")
+                        .font(.callout)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("Open NixMC settings (⌘,)")
+
+                Spacer(minLength: 0)
+
+                if let update = app.appUpdate {
+                    Button { app.installAppUpdate() } label: {
+                        HStack(spacing: 5) {
+                            if app.appUpdating {
+                                ProgressView()
+                                    .controlSize(.small)
+                            } else {
+                                Image(systemName: "arrow.down")
+                            }
+                            Text(app.appUpdating ? "Updating…" : "Update \(update.tagName)")
+                        }
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .background(Theme.accent, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(app.appUpdating)
+                    .help("Install NixMC \(update.tagName) and relaunch")
+                }
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
             .frame(maxWidth: .infinity, alignment: .leading)
