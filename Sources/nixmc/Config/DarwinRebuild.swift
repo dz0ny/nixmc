@@ -7,7 +7,7 @@ import Foundation
 /// user's PATH; `switch` is escalated (activation writes to system locations).
 enum DarwinRebuild {
     static func flakeRef(host: String) -> String {
-        "\(Paths.canonicalConfigDir)#\(host)"
+        "\(Paths.buildFlakeDir)#\(host)"
     }
 
     private static func rebuildInvocation(_ sub: String, flakeRef: String) -> String {
@@ -71,7 +71,7 @@ enum DarwinRebuild {
         // 1) As the user: materialize the system closure and print its store path.
         var storePath = ""
         let resolve = "nix build --no-link --print-out-paths "
-            + shQuote("\(Paths.canonicalConfigDir)#darwinConfigurations.\(host).system")
+            + shQuote("\(Paths.buildFlakeDir)#darwinConfigurations.\(host).system")
         let code = await Shell.streamLogin(resolve) { line in
             if line.hasPrefix("/nix/store/") { storePath = line.trimmingCharacters(in: .whitespaces) }
             onLine(line)

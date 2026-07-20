@@ -73,6 +73,14 @@ final class AppSettings: ObservableObject {
     /// Model alias passed to Claude Code via `--model` (opus/sonnet/haiku).
     @Published var claudeModel: String { didSet { d.set(claudeModel, forKey: K.claudeModel) } }
 
+    // MARK: configuration
+
+    /// User-chosen path of the local git repo holding the configuration
+    /// ("" = automatic: /etc/nix-darwin, else ~/.config/nixmc/darwin).
+    /// Only honored when it actually verifies as a flake repo — see
+    /// `Paths.customRepoDir`.
+    @Published var configRepoPath: String { didSet { d.set(configRepoPath, forKey: K.configRepoPath) } }
+
     // MARK: pipeline
 
     /// Run `darwin-rebuild build` automatically after the agent edits. Off:
@@ -158,6 +166,7 @@ final class AppSettings: ObservableObject {
         customInstructions = ""
         ollamaAiderModel = "qwen2.5-coder:7b"
         claudeModel = "opus"
+        configRepoPath = ""
         autoBuild = true
         autoFormat = true
         reviewApplyOutput = true
@@ -185,6 +194,7 @@ final class AppSettings: ObservableObject {
         static let customInstructions = "agentInstructions"
         static let ollamaAiderModel = "ollamaAiderModel"
         static let claudeModel = "claudeModel"
+        static let configRepoPath = "configRepoPath"
         static let autoBuild = "autoBuild"
         static let autoFormat = "autoFormat"
         static let reviewApplyOutput = "reviewApplyOutput"
@@ -214,6 +224,7 @@ final class AppSettings: ObservableObject {
             K.customInstructions: "",
             K.ollamaAiderModel: "qwen2.5-coder:7b",
             K.claudeModel: "opus",
+            K.configRepoPath: "",
             K.autoBuild: true,
             K.autoFormat: true,
             K.reviewApplyOutput: true,
@@ -237,6 +248,7 @@ final class AppSettings: ObservableObject {
         customInstructions = d.string(forKey: K.customInstructions) ?? ""
         ollamaAiderModel = d.string(forKey: K.ollamaAiderModel) ?? "qwen2.5-coder:7b"
         claudeModel = d.string(forKey: K.claudeModel) ?? "opus"
+        configRepoPath = d.string(forKey: K.configRepoPath) ?? ""
         autoBuild = d.bool(forKey: K.autoBuild)
         autoFormat = d.bool(forKey: K.autoFormat)
         reviewApplyOutput = d.bool(forKey: K.reviewApplyOutput)

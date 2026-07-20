@@ -27,8 +27,16 @@ struct SettingsView: View {
 
 private struct ConfigurationSettingsPane: View {
     @EnvironmentObject private var app: AppState
+    @EnvironmentObject private var settings: AppSettings
     @State private var confirmCreate = false
     @State private var confirmReplace = false
+    @State private var repoPathDraft = ""
+    @State private var repoPathStatus: RepoPathStatus = .idle
+
+    private enum RepoPathStatus: Equatable {
+        case idle, verifying, valid, automatic
+        case invalid(String)
+    }
 
     private var canCreate: Bool {
         app.phase == .needsConfig && ConfigScaffold.canCreate(repoDir: app.paths.repoDir)
@@ -37,7 +45,36 @@ private struct ConfigurationSettingsPane: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent("Location") {
+                TextField("Repository folder", text: $repoPathDraft,
+                          prompt: Text("Automatic"))
+                    .font(.callout.monospaced())
+                    .autocorrectionDisabled()
+                    .onSubmit(verifyRepoPath)
+
+                Button {
+                    verifyRepoPath()
+                } label: {
+                    Label(repoPathStatus == .verifying ? "Verifying…" : "Verify & Use",
+                          systemImage: "checkmark.circle")
+                }
+                .disabled(repoPathStatus == .verifying || app.busy)
+
+                switch repoPathStatus {
+                case .idle, .verifying:
+                    EmptyView()
+                case .valid:
+                    Label("Verified — using this repository.", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                case .automatic:
+                    Label("Using automatic location.", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                case .invalid(let problem):
+                    Label(problem, systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                LabeledContent("In use") {
                     Text(app.paths.repoDir.path)
                         .font(.callout.monospaced())
                         .lineLimit(1)
@@ -47,7 +84,7 @@ private struct ConfigurationSettingsPane: View {
             } header: {
                 Text("Managed configuration")
             } footer: {
-                Text("NixMC manages one Git-backed nix-darwin configuration at this location.")
+                Text("NixMC manages one Git-backed nix-darwin configuration. Leave the field empty for the automatic location (/etc/nix-darwin, else ~/.config/nixmc/darwin), or point it at an existing git repo containing flake.nix — it is verified before it is used.")
             }
 
             Section {
@@ -75,7 +112,8 @@ private struct ConfigurationSettingsPane: View {
             }
         }
         .formStyle(.grouped)
-        .frame(height: 300)
+        .frame(height: 420)
+        .onAppear { repoPathDraft = settings.configRepoPath }
         .confirmationDialog("Create a configuration from the template?", isPresented: $confirmCreate) {
             Button("Create Configuration") {
                 app.createConfig()
@@ -91,6 +129,33 @@ private struct ConfigurationSettingsPane: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("The current configuration will be moved to a timestamped backup beside \(app.paths.repoDir.path), then NixMC will create a fresh Git-backed template.")
+        }
+    }
+
+    /// Check the entered path off the main actor (the git check shells out),
+    /// and only persist it once it verifies. An emptied field returns to the
+    /// automatic location. On success the app re-resolves everything from the
+    /// new repo (phase, pending changes, history, Homebrew lists).
+    private func verifyRepoPath() {
+        let raw = repoPathDraft
+        guard !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            settings.configRepoPath = ""
+            repoPathStatus = .automatic
+            app.refresh()
+            return
+        }
+        repoPathStatus = .verifying
+        Task.detached {
+            let problem = Paths.verifyRepoOverride(raw)
+            await MainActor.run {
+                if let problem {
+                    repoPathStatus = .invalid(problem)
+                } else {
+                    settings.configRepoPath = raw
+                    repoPathStatus = .valid
+                    app.refresh()
+                }
+            }
         }
     }
 }
