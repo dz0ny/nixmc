@@ -72,6 +72,18 @@ enum Git {
             ? "No uncommitted changes." : out
     }
 
+    /// Drop all uncommitted changes (tracked and untracked) by stashing them,
+    /// not hard-resetting — a mistaken drop stays recoverable with
+    /// `git stash pop` until the stash is cleared.
+    static func stashChanges(in repo: URL) throws {
+        let r = try Shell.run("/usr/bin/git",
+                              ["stash", "push", "--include-untracked", "-m",
+                               "nixmc: dropped uncommitted changes"], cwd: repo)
+        if !r.ok {
+            throw NixmcError.command("git stash failed: \(r.stderr.isEmpty ? r.stdout : r.stderr)")
+        }
+    }
+
     /// Resolve a ref to its full sha. Nil when the ref doesn't exist.
     static func revParse(_ ref: String, in repo: URL) -> String? {
         guard let r = try? Shell.run("/usr/bin/git", ["rev-parse", "--verify", ref], cwd: repo),

@@ -70,6 +70,8 @@ final class AppSettings: ObservableObject {
     @Published var customInstructions: String { didSet { d.set(customInstructions, forKey: K.customInstructions) } }
     /// Model tag served by local Ollama when using the Ollama + Aider agent.
     @Published var ollamaAiderModel: String { didSet { d.set(ollamaAiderModel, forKey: K.ollamaAiderModel) } }
+    /// Model alias passed to Claude Code via `--model` (opus/sonnet/haiku).
+    @Published var claudeModel: String { didSet { d.set(claudeModel, forKey: K.claudeModel) } }
 
     // MARK: pipeline
 
@@ -155,6 +157,7 @@ final class AppSettings: ObservableObject {
         preferredAgentID = ""
         customInstructions = ""
         ollamaAiderModel = "qwen2.5-coder:7b"
+        claudeModel = "opus"
         autoBuild = true
         autoFormat = true
         reviewApplyOutput = true
@@ -181,6 +184,7 @@ final class AppSettings: ObservableObject {
         static let preferredAgent = "preferredAgent"
         static let customInstructions = "agentInstructions"
         static let ollamaAiderModel = "ollamaAiderModel"
+        static let claudeModel = "claudeModel"
         static let autoBuild = "autoBuild"
         static let autoFormat = "autoFormat"
         static let reviewApplyOutput = "reviewApplyOutput"
@@ -209,6 +213,7 @@ final class AppSettings: ObservableObject {
             K.preferredAgent: "",
             K.customInstructions: "",
             K.ollamaAiderModel: "qwen2.5-coder:7b",
+            K.claudeModel: "opus",
             K.autoBuild: true,
             K.autoFormat: true,
             K.reviewApplyOutput: true,
@@ -231,6 +236,7 @@ final class AppSettings: ObservableObject {
         preferredAgentID = d.string(forKey: K.preferredAgent) ?? ""
         customInstructions = d.string(forKey: K.customInstructions) ?? ""
         ollamaAiderModel = d.string(forKey: K.ollamaAiderModel) ?? "qwen2.5-coder:7b"
+        claudeModel = d.string(forKey: K.claudeModel) ?? "opus"
         autoBuild = d.bool(forKey: K.autoBuild)
         autoFormat = d.bool(forKey: K.autoFormat)
         reviewApplyOutput = d.bool(forKey: K.reviewApplyOutput)

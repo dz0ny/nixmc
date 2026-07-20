@@ -20,6 +20,7 @@ struct ContentView: View {
     /// separate tabs. Help search results can jump directly to the guide.
     @State private var selectedAreaTab: SectionPaneTab = .recipes
     @State private var showClearConversationConfirmation = false
+    @State private var showDropChangesConfirmation = false
     @State private var recipePreview: Recipe?
     @State private var remoteConfigURL = ""
     @State private var historyExpanded = true
@@ -159,6 +160,12 @@ struct ContentView: View {
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("This removes the visible messages. Pending configuration changes are kept.")
+        }
+        .alert("Drop uncommitted changes?", isPresented: $showDropChangesConfirmation) {
+            Button("Drop", role: .destructive) { app.dropChanges() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("The pending edits are stashed in git, so you can recover them with “git stash pop” if needed.")
         }
     }
 
@@ -501,6 +508,11 @@ struct ContentView: View {
                         }
                         .buttonStyle(.plain)
                         .help("Review the uncommitted changes since the last commit")
+                        .contextMenu {
+                            Button("Drop changes…", systemImage: "trash", role: .destructive) {
+                                showDropChangesConfirmation = true
+                            }
+                        }
                     }
                     if app.commits.isEmpty && !app.pending {
                         Text("No changes applied yet").foregroundStyle(.secondary).font(.callout)
@@ -818,6 +830,12 @@ struct ContentView: View {
                 Text(pendingSubtitle).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
+            Button { showDropChangesConfirmation = true } label: {
+                Label("Drop", systemImage: "trash")
+            }
+            .controlSize(.large)
+            .disabled(app.busy)
+            .help("Discard the uncommitted changes (stashed in git, recoverable)")
             Button { app.reviewChanges() } label: {
                 Label("Review diff", systemImage: "doc.text.magnifyingglass")
             }

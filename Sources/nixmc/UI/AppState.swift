@@ -723,6 +723,38 @@ final class AppState: ObservableObject {
         send(prompt, display: "Fix the build error")
     }
 
+    /// Throw away the uncommitted changes. Stashes rather than hard-resets, so
+    /// a mistaken drop can still be recovered with `git stash pop` in the repo.
+    func dropChanges() {
+        run {
+            let repo = self.paths.repoDir
+            self.activity = "Dropping changes…"
+            let step = self.beginStep("Drop changes")
+            self.stepOut(step, "› git stash push --include-untracked")
+            let error: String? = await Task.detached {
+                do { try Git.stashChanges(in: repo); return nil }
+                catch { return error.localizedDescription }
+            }.value
+            if let error {
+                self.stepOut(step, error)
+                self.finishStep(step, ok: false)
+                self.transcript.append(ChatMessage(role: .system,
+                    text: "Couldn't drop the changes — see the step log above."))
+                return
+            }
+            self.stepOut(step, "Dropped (recoverable with `git stash pop`).")
+            self.finishStep(step, ok: true)
+            self.pending = await Task.detached { Git.hasChanges(in: repo) }.value
+            self.buildOK = false
+            self.buildFailed = false
+            self.showWorkingDiff = false
+            self.workingDiffText = ""
+            self.loadHomebrew()
+            self.transcript.append(ChatMessage(role: .system,
+                text: "Dropped the uncommitted changes. They're stashed in git if you change your mind."))
+        }
+    }
+
     /// Load the working diff (agent's uncommitted edits) into the viewer.
     func reviewChanges() {
         workingDiffText = "Loading…"

@@ -94,10 +94,10 @@ struct AgentCLI: Identifiable, Hashable {
     private func agentArguments(prompt: String, mcpConfig: URL?) -> [String] {
         switch id {
         case "claude":
-            guard let mcpConfig else { return launchArgs + [prompt] }
+            guard let mcpConfig else { return launchArgs + Self.claudeModelArgs + [prompt] }
             // `--mcp-config` accepts one or more paths, so `--` is required
             // before the positional prompt to stop it consuming that prompt.
-            return launchArgs + ["--mcp-config", mcpConfig.path, "--", prompt]
+            return launchArgs + Self.claudeModelArgs + ["--mcp-config", mcpConfig.path, "--", prompt]
         case "codex":
             return launchArgs + [
                 "-c", "mcp_servers.nixos.command=\"nix\"",
@@ -112,6 +112,13 @@ struct AgentCLI: Identifiable, Hashable {
         default:
             return launchArgs + [prompt]
         }
+    }
+
+    /// The Claude model chosen in Settings, read at call time (like the Ollama
+    /// model) so a change applies to the very next run. "" = the CLI's default.
+    private static var claudeModelArgs: [String] {
+        let model = UserDefaults.standard.string(forKey: "claudeModel") ?? "opus"
+        return model.isEmpty ? [] : ["--model", model]
     }
 
     private func mcpConfigFile() -> URL? {
@@ -154,7 +161,8 @@ struct AgentCLI: Identifiable, Hashable {
         switch id {
         case "claude":
             let args = [launchArgs[0], "-p", "--output-format", "text",
-                        "--no-session-persistence", "--tools", "", "--", prompt]
+                        "--no-session-persistence", "--tools", ""]
+                + Self.claudeModelArgs + ["--", prompt]
             var output = ""
             let code = await Shell.streamLogin(shellCommand(args), cwd: cwd) {
                 output += $0 + "\n"

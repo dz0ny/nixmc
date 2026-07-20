@@ -189,6 +189,18 @@ private struct GeneralSettingsPane: View {
                 TextField("Extra instructions", text: $settings.customInstructions, axis: .vertical)
                     .lineLimit(2...4)
 
+                if selectedAgentID.wrappedValue == "claude" {
+                    Picker("Claude model", selection: $settings.claudeModel) {
+                        Text("Opus").tag("opus")
+                        Text("Sonnet").tag("sonnet")
+                        Text("Haiku").tag("haiku")
+                    }
+                    .pickerStyle(.segmented)
+                    Text("Opus is the most capable; Sonnet and Haiku are faster and cheaper.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
                 if selectedAgentID.wrappedValue == "ollama-aider" {
                     TextField("Ollama coding model", text: $settings.ollamaAiderModel,
                               prompt: Text("qwen2.5-coder:7b"))
