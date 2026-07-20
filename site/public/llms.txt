@@ -1,0 +1,17 @@
+# NixMC
+
+> Manage your Mac by describing the change you want. A native macOS menu-bar app that puts a coding agent (Claude Code or Codex CLI) in front of a nix-darwin configuration — it edits the flake, validates the build, shows a diff, and commits to git for rollback.
+
+## Overview
+
+NixMC is a native SwiftUI menu-bar app for macOS 14+. You describe a change in plain English; a configured coding agent edits your nix-darwin flake, NixMC validates it with `darwin-rebuild build`, presents a complete diff, and applies it only after you approve — committing to git so any change can be inspected or rolled back. Homebrew apps are managed as JSON data the flake reads with `builtins.fromJSON`. It uses the agent already installed on your Mac, so no AI API key is entered into the app.
+
+## Key Pages
+
+- [Home](https://dz0ny.github.io/nixmc/)
+
+## Links
+
+- Source: https://github.com/dz0ny/nixmc
+- Releases: https://github.com/dz0ny/nixmc/releases
+- License: MIT

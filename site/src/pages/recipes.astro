@@ -1,0 +1,115 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import * as Lucide from "lucide-react";
+import { ArrowUpRight, Star } from "lucide-react";
+import { RECIPE_SECTIONS } from "@/recipeSections";
+import { SITE } from "@/config";
+import type { CollectionEntry } from "astro:content";
+import type { WithContext, CollectionPage } from "schema-dts";
+
+const all = await getCollection("recipes");
+const total = all.length;
+
+// Group by section, in the app's order. Featured first, then alphabetical.
+const grouped = RECIPE_SECTIONS.map((s) => {
+  const items = all
+    .filter((r) => r.data.section === s.name)
+    .sort((a, b) => {
+      if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+      return a.data.title.localeCompare(b.data.title);
+    });
+  return {
+    ...s,
+    items,
+    Icon: (Lucide as Record<string, any>)[s.icon] ?? Lucide.Sparkles,
+  };
+}).filter((s) => s.items.length > 0);
+
+function sourceUrl(r: CollectionEntry<"recipes">) {
+  return (
+    r.data.source ??
+    `${SITE.repo}/blob/main/Sources/nixmc/Resources/recipes/${r.id}.md`
+  );
+}
+
+const schema: WithContext<CollectionPage> = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "NixMC recipes",
+  description: `Browse all ${total} built-in NixMC recipes, grouped by section.`,
+};
+---
+
+<Layout
+  title="Recipes"
+  description={`All ${total} built-in NixMC recipes — macOS settings, packages, shell, services, security, fonts, AI agents, and persona kits — with source links.`}
+  schema={schema}
+>
+  <!-- Header -->
+  <section class="border-b border-border bg-gradient-hero">
+    <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <p class="font-mono text-xs uppercase tracking-[0.2em] text-brand">Recipe catalog</p>
+      <h1 class="mt-3 max-w-3xl text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+        {total} built-in recipes, straight from the app
+      </h1>
+      <p class="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+        These ship inside NixMC and are grouped by the same sections you see in the
+        sidebar. Each is source-backed — pick one, review the diff it proposes, and apply.
+        <code class="font-mono text-sm text-foreground">featured</code> recipes are the
+        common starting points.
+      </p>
+
+      <!-- Section jump nav -->
+      <nav class="mt-8 flex flex-wrap gap-2">
+        {grouped.map((s) => (
+          <a
+            href={`#${s.slug}`}
+            class="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur transition-colors hover:text-foreground"
+          >
+            {s.name}
+            <span class="font-mono text-[10px] text-brand">{s.items.length}</span>
+          </a>
+        ))}
+      </nav>
+    </div>
+  </section>
+
+  <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+    <div class="space-y-16">
+      {grouped.map((s) => (
+        <section id={s.slug} class="scroll-mt-20">
+          <div class="flex items-center gap-3 border-b border-border pb-4">
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand">
+              <s.Icon className="h-5 w-5" />
+            </div>
+            <h2 class="text-xl font-semibold tracking-tight">{s.name}</h2>
+            <span class="rounded-full bg-secondary px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{s.items.length}</span>
+          </div>
+
+          <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {s.items.map((r) => (
+              <a
+                href={sourceUrl(r)}
+                target="_blank"
+                rel="noreferrer"
+                class="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-medium"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <h3 class="font-semibold leading-snug">{r.data.title}</h3>
+                  <ArrowUpRight className="h-4 w-4 flex-none text-muted-foreground transition-colors group-hover:text-brand" />
+                </div>
+                <p class="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{r.data.summary}</p>
+                {r.data.featured && (
+                  <span class="mt-4 inline-flex w-fit items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand">
+                    <Star className="h-3 w-3" /> Featured
+                  </span>
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+</Layout>

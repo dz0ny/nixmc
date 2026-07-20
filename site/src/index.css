@@ -1,0 +1,219 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  /* Brand — teal cube on charcoal (from the app icon) */
+  --color-brand: hsl(var(--brand));
+  --color-brand-foreground: hsl(var(--brand-foreground));
+  --color-brand-soft: hsl(var(--brand-soft));
+  --color-ink: hsl(var(--ink));
+  --color-steel: hsl(var(--steel));
+
+  --background-image-grid: var(--grid);
+  --background-image-gradient-hero: var(--gradient-hero);
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-medium: var(--shadow-medium);
+  --shadow-lift: var(--shadow-lift);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-code), ui-monospace, monospace;
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-rise: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-fade: fade 0.9s ease both;
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+/* Design system — minimalist / light. All colors HSL. */
+@layer base {
+  :root {
+    --background: 210 24% 99%;
+    --foreground: 220 24% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 24% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 24% 12%;
+
+    /* Charcoal ink from the icon frame */
+    --ink: 220 22% 14%;
+
+    --primary: 220 24% 14%;
+    --primary-foreground: 210 24% 99%;
+
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 220 24% 14%;
+
+    --muted: 210 22% 95.5%;
+    --muted-foreground: 218 12% 44%;
+
+    --accent: 182 44% 95%;
+    --accent-foreground: 185 55% 20%;
+
+    /* Teal cube */
+    --brand: 183 46% 39%;
+    --brand-foreground: 0 0% 100%;
+    --brand-soft: 183 44% 92%;
+    --steel: 205 24% 46%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214 20% 91%;
+    --input: 214 20% 89%;
+    --ring: 183 46% 39%;
+
+    --radius: 0.75rem;
+
+    --grid:
+      linear-gradient(to right, hsl(220 20% 50% / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(220 20% 50% / 0.06) 1px, transparent 1px);
+    --gradient-hero:
+      radial-gradient(60% 55% at 50% 0%, hsl(183 46% 39% / 0.12), transparent 70%);
+
+    --shadow-soft: 0 1px 2px hsl(220 24% 12% / 0.05), 0 6px 20px hsl(220 24% 12% / 0.05);
+    --shadow-medium: 0 2px 6px hsl(220 24% 12% / 0.06), 0 14px 40px hsl(220 24% 12% / 0.09);
+    --shadow-lift: 0 30px 70px -20px hsl(185 40% 20% / 0.28);
+  }
+
+  .dark {
+    --background: 220 24% 8%;
+    --foreground: 210 20% 96%;
+
+    --card: 220 22% 11%;
+    --card-foreground: 210 20% 96%;
+
+    --popover: 220 22% 11%;
+    --popover-foreground: 210 20% 96%;
+
+    --ink: 210 20% 96%;
+
+    --primary: 210 20% 96%;
+    --primary-foreground: 220 24% 10%;
+
+    --secondary: 220 18% 16%;
+    --secondary-foreground: 210 20% 96%;
+
+    --muted: 220 18% 15%;
+    --muted-foreground: 215 15% 62%;
+
+    --accent: 185 30% 18%;
+    --accent-foreground: 183 60% 78%;
+
+    --brand: 183 52% 52%;
+    --brand-foreground: 220 24% 8%;
+    --brand-soft: 185 30% 18%;
+    --steel: 205 30% 62%;
+
+    --destructive: 0 62% 46%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 16% 20%;
+    --input: 220 16% 22%;
+    --ring: 183 52% 52%;
+
+    --grid:
+      linear-gradient(to right, hsl(210 30% 70% / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(210 30% 70% / 0.05) 1px, transparent 1px);
+    --gradient-hero:
+      radial-gradient(60% 55% at 50% 0%, hsl(183 52% 52% / 0.16), transparent 70%);
+
+    --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.3), 0 6px 20px hsl(0 0% 0% / 0.35);
+    --shadow-medium: 0 2px 6px hsl(0 0% 0% / 0.4), 0 14px 40px hsl(0 0% 0% / 0.5);
+    --shadow-lift: 0 30px 70px -20px hsl(0 0% 0% / 0.6);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: hsl(var(--brand) / 0.22);
+  }
+}

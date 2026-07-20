@@ -1,0 +1,40 @@
+---
+import { SITE } from "@/config";
+import { Apple } from "lucide-react";
+---
+
+<section class="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+  <div class="relative overflow-hidden rounded-3xl border border-border bg-ink px-6 py-16 text-center shadow-lift sm:px-16">
+    <div
+      class="pointer-events-none absolute inset-0 opacity-[0.5]"
+      style="background: radial-gradient(60% 80% at 50% 0%, hsl(183 52% 52% / 0.25), transparent 70%);"
+      aria-hidden="true"
+    ></div>
+    <div class="relative">
+      <h2 class="mx-auto max-w-2xl text-balance text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+        Stop hand-editing options. Describe the Mac you want.
+      </h2>
+      <p class="mx-auto mt-4 max-w-xl text-pretty text-white/70">
+        Reproducible nix-darwin, a diff you actually review, and git-backed rollback —
+        driven by the coding agent you already use.
+      </p>
+      <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a
+          href={SITE.latestDmg}
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex h-12 items-center gap-2 rounded-xl bg-brand px-6 text-sm font-medium text-brand-foreground shadow-medium transition-transform hover:-translate-y-0.5"
+        >
+          <Apple className="h-4 w-4" />
+          Download for macOS
+        </a>
+        <a
+          href={SITE.repo}
+          target="_blank"
+          rel="noreferrer"
+          class="inline-flex h-12 items-center rounded-xl border border-white/20 bg-white/5 px-6 text-sm font-medium text-white transition-colors hover:bg-white/10"
+        >Star on GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>

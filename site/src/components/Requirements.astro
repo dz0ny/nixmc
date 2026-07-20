@@ -1,0 +1,63 @@
+---
+import { SITE } from "@/config";
+import { Check } from "lucide-react";
+
+const reqs = [
+  "macOS 14 (Sonoma) or newer",
+  "An administrator account on the Mac",
+  "Claude Code on your PATH, or Codex CLI at ~/.local/bin/codex",
+  "The chosen agent signed in before opening NixMC",
+];
+---
+
+<section id="requirements" class="scroll-mt-20 border-t border-border bg-muted/40">
+  <div class="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+    <div class="grid gap-14 lg:grid-cols-2">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.2em] text-brand">Requirements</p>
+        <h2 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+          What you need before first run
+        </h2>
+        <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
+          Install Nix yourself before first use — NixMC links to Determinate's graphical
+          installer but never downloads or runs an installer on your behalf. It uses the
+          agent already on your Mac, so no AI API key is entered into the app.
+        </p>
+        <ul class="mt-8 space-y-3">
+          {reqs.map((r) => (
+            <li class="flex items-start gap-3 text-sm">
+              <span class="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-brand-soft text-brand">
+                <Check className="h-3.5 w-3.5" />
+              </span>
+              <span class="text-muted-foreground">{r}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.2em] text-brand">Install</p>
+        <h3 class="mt-3 text-xl font-semibold">Grab a signed release</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+          Download the signed <code class="font-mono text-foreground">nixmc.dmg</code>,
+          open it, and drag <code class="font-mono text-foreground">nixmc.app</code> to
+          Applications. It keeps itself up to date from Releases.
+        </p>
+        <a
+          href={SITE.latestDmg}
+          target="_blank"
+          rel="noreferrer"
+          class="mt-5 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+        >Download the latest DMG</a>
+
+        <p class="mt-8 text-sm font-medium">…or build it locally</p>
+        <div class="mt-3 overflow-x-auto rounded-xl border border-border bg-ink p-4">
+          <pre class="font-mono text-xs leading-relaxed text-white/90"><code>git clone {SITE.repo}.git
+cd nixmc
+make app
+open dist/nixmc.app</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

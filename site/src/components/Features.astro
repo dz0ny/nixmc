@@ -1,0 +1,92 @@
+---
+import {
+  MessageSquareText,
+  GitCompareArrows,
+  History,
+  Users,
+  Package,
+  RefreshCw,
+  BookOpen,
+  Bot,
+} from "lucide-react";
+
+const features = [
+  {
+    icon: MessageSquareText,
+    title: "Plain-English changes",
+    body: "Describe a result — install an app, flip a macOS default, configure your shell, enable a service. The agent prepares the edit; you never hand-write Nix.",
+    span: "sm:col-span-2",
+  },
+  {
+    icon: GitCompareArrows,
+    title: "Validate, then diff",
+    body: "Every change is formatted and built with darwin-rebuild before you see a complete, reviewable diff. Nothing activates unreviewed.",
+    span: "",
+  },
+  {
+    icon: History,
+    title: "Git-backed rollback",
+    body: "Applied changes are committed automatically. Inspect any change and roll back to an earlier commit from History.",
+    span: "",
+  },
+  {
+    icon: Users,
+    title: "My Team recipes & docs",
+    body: "Point at a Git repo of Markdown recipes and get a shared, curated catalog — fetched hourly, kept isolated from your personal config history. A team GUIDE.md shows up verbatim in the My Team → Guide tab and in search, so onboarding docs travel with the recipes.",
+    span: "sm:col-span-2",
+  },
+  {
+    icon: Package,
+    title: "Homebrew as data",
+    body: "Casks and formulae are plain JSON the flake reads with fromJSON. Add or remove apps from one package browser — no Nix editing.",
+    span: "",
+  },
+  {
+    icon: RefreshCw,
+    title: "Update proposals",
+    body: "Flake input updates arrive as isolated, pre-built proposals that wait for your approval — your live config is never changed behind your back.",
+    span: "",
+  },
+  {
+    icon: Bot,
+    title: "Your agent, your key",
+    body: "Works with Claude Code or Codex CLI already installed on your Mac. Pick a preferred agent; no AI API key is ever entered into NixMC.",
+    span: "",
+  },
+  {
+    icon: BookOpen,
+    title: "Readable guides",
+    body: "Plain-English guides are generated from the configuration currently in use, so you can see what each area actually does today.",
+    span: "sm:col-span-2",
+  },
+];
+---
+
+<section id="features" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6">
+  <div class="max-w-2xl">
+    <p class="font-mono text-xs uppercase tracking-[0.2em] text-brand">Capabilities</p>
+    <h2 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+      An orchestrator for your Mac — not another Nix tool
+    </h2>
+    <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
+      NixMC shells out to <code class="font-mono text-sm text-foreground">nix</code>,
+      <code class="font-mono text-sm text-foreground">darwin-rebuild</code>,
+      <code class="font-mono text-sm text-foreground">git</code>, and your agent CLI.
+      You get the reproducibility of nix-darwin without editing options by hand.
+    </p>
+  </div>
+
+  <div class="mt-12 grid gap-4 sm:grid-cols-3">
+    {features.map((f) => (
+      <article
+        class={`group rounded-2xl border border-border bg-card p-6 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-medium ${f.span}`}
+      >
+        <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-soft text-brand">
+          <f.icon className="h-5 w-5" />
+        </div>
+        <h3 class="mt-5 text-lg font-semibold">{f.title}</h3>
+        <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{f.body}</p>
+      </article>
+    ))}
+  </div>
+</section>

@@ -1,0 +1,54 @@
+---
+const steps = [
+  {
+    n: "01",
+    title: "Describe or choose",
+    body: "Type the result you want in plain English, or pick a proven recipe from the catalog.",
+  },
+  {
+    n: "02",
+    title: "The agent edits",
+    body: "Claude Code or Codex edits the configuration repository non-interactively, with permission to touch only the flake.",
+  },
+  {
+    n: "03",
+    title: "Format & build",
+    body: "NixMC formats the flake and validates it with darwin-rebuild build before anything is shown as final.",
+  },
+  {
+    n: "04",
+    title: "Review the diff",
+    body: "Inspect the complete, generated diff and the build output. Nothing is applied until you say so.",
+  },
+  {
+    n: "05",
+    title: "Apply & commit",
+    body: "Activate with administrator approval. The change is committed to git so you can inspect or roll it back later.",
+  },
+];
+---
+
+<section id="how" class="scroll-mt-20 border-y border-border bg-muted/40">
+  <div class="mx-auto max-w-6xl px-4 py-24 sm:px-6">
+    <div class="max-w-2xl">
+      <p class="font-mono text-xs uppercase tracking-[0.2em] text-brand">Workflow</p>
+      <h2 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+        From a sentence to a reviewed change
+      </h2>
+      <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
+        The agent runs non-interactively with permission to edit the configuration.
+        You always review the proposed diff before applying it.
+      </p>
+    </div>
+
+    <ol class="mt-14 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-5">
+      {steps.map((s) => (
+        <li class="flex flex-col bg-card p-6">
+          <span class="font-mono text-sm text-brand">{s.n}</span>
+          <h3 class="mt-4 text-base font-semibold">{s.title}</h3>
+          <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>

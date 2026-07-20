@@ -1,0 +1,86 @@
+---
+import { Picture } from "astro:assets";
+import icon from "@/assets/nixmc-icon.png";
+import { SITE, BASE } from "@/config";
+
+const year = 2026;
+const cols = [
+  {
+    title: "Product",
+    links: [
+      { label: "Features", href: "#features" },
+      { label: "How it works", href: "#how" },
+      { label: "Recipes", href: "#recipes" },
+      { label: "Requirements", href: "#requirements" },
+    ],
+  },
+  {
+    title: "Project",
+    links: [
+      { label: "Source on GitHub", href: SITE.repo },
+      { label: "Releases", href: SITE.releases },
+      { label: "Recipes folder", href: `${SITE.repo}/tree/main/Sources/nixmc/Resources/recipes` },
+      { label: "License (MIT)", href: `${SITE.repo}/blob/main/LICENSE` },
+    ],
+  },
+  {
+    title: "Ecosystem",
+    links: [
+      { label: "nix-darwin", href: "https://github.com/nix-darwin/nix-darwin" },
+      { label: "Determinate Nix", href: "https://determinate.systems/" },
+      { label: "Claude Code", href: "https://code.claude.com/docs" },
+      { label: "Codex CLI", href: "https://developers.openai.com/codex/cli/" },
+    ],
+  },
+];
+---
+
+<footer class="border-t border-border bg-muted/40">
+  <div class="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+    <div class="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div>
+        <a href={BASE} class="flex items-center gap-2.5 font-semibold tracking-tight">
+          <Picture
+            src={icon}
+            alt="NixMC icon"
+            formats={["webp"]}
+            fallbackFormat="webp"
+            widths={[36, 72]}
+            width={36}
+            height={36}
+            loading="lazy"
+            class="h-9 w-9 rounded-[9px]"
+          />
+          <span class="text-lg">NixMC</span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
+          A native macOS menu-bar app for managing a nix-darwin configuration in plain English —
+          validated, diffed, and committed to git before it touches your Mac.
+        </p>
+      </div>
+
+      {cols.map((col) => (
+        <div>
+          <h3 class="text-sm font-semibold">{col.title}</h3>
+          <ul class="mt-4 space-y-2.5">
+            {col.links.map((l) => (
+              <li>
+                <a
+                  href={l.href}
+                  target={l.href.startsWith("#") ? undefined : "_blank"}
+                  rel={l.href.startsWith("#") ? undefined : "noreferrer"}
+                  class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >{l.label}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row sm:items-center">
+      <p>© {year} NixMC. Open source under the MIT license.</p>
+      <p class="font-mono text-xs">macOS 14+ · nix-darwin · Home Manager</p>
+    </div>
+  </div>
+</footer>

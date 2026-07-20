@@ -1,0 +1,83 @@
+---
+import { Picture } from "astro:assets";
+import { getCollection } from "astro:content";
+import * as Lucide from "lucide-react";
+import shot from "@/assets/screenshot-guide.png";
+import { RECIPE_SECTIONS } from "@/recipeSections";
+import { BASE } from "@/config";
+import { ArrowRight } from "lucide-react";
+
+const recipes = await getCollection("recipes");
+const total = recipes.length;
+
+const counts = new Map<string, number>();
+for (const r of recipes) {
+  counts.set(r.data.section, (counts.get(r.data.section) ?? 0) + 1);
+}
+
+const sections = RECIPE_SECTIONS.map((s) => ({
+  ...s,
+  count: counts.get(s.name) ?? 0,
+  Icon: (Lucide as Record<string, any>)[s.icon] ?? Lucide.Sparkles,
+})).filter((s) => s.count > 0);
+
+const recipesHref = `${BASE}recipes/`;
+---
+
+<section id="recipes" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6">
+  <div class="grid items-center gap-14 lg:grid-cols-2">
+    <div>
+      <p class="font-mono text-xs uppercase tracking-[0.2em] text-brand">Recipes</p>
+      <h2 class="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+        {total} built-in recipes, grouped like the app
+      </h2>
+      <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
+        Recipes turn configuration into searchable, source-backed docs — find what an
+        alias does, reuse a proven choice, or adapt it to your workflow. Every recipe
+        below ships inside NixMC, organized by the same sections you see in the sidebar.
+        Team-shared catalogs plug in the same way — and can ship a GUIDE.md, so you get
+        the team's docs alongside its recipes.
+      </p>
+      <a
+        href={recipesHref}
+        class="mt-7 inline-flex h-11 items-center gap-2 rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-soft transition-transform hover:-translate-y-0.5"
+      >
+        Browse all {total} recipes
+        <ArrowRight className="h-4 w-4" />
+      </a>
+    </div>
+
+    <div class="rounded-2xl border border-border bg-card p-2 shadow-lift">
+      <Picture
+        src={shot}
+        alt="NixMC configuration guide generated from the active configuration"
+        formats={["webp"]}
+        fallbackFormat="webp"
+        widths={[700, 1100, 1400]}
+        sizes="(min-width: 1024px) 560px, 100vw"
+        loading="lazy"
+        class="w-full rounded-xl"
+      />
+    </div>
+  </div>
+
+  <div class="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {sections.map((s) => (
+      <a
+        href={`${recipesHref}#${s.slug}`}
+        class="group flex gap-4 rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-medium"
+      >
+        <div class="mt-0.5 flex h-11 w-11 flex-none items-center justify-center rounded-xl bg-brand-soft text-brand">
+          <s.Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="font-semibold">{s.name}</h3>
+            <span class="rounded-full bg-secondary px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{s.count}</span>
+          </div>
+          <p class="mt-1 text-sm leading-relaxed text-muted-foreground">{s.blurb}</p>
+        </div>
+      </a>
+    ))}
+  </div>
+</section>
