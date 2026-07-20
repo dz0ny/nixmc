@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="100%" cy="0%" r="72%">
+      <stop offset="0%" stop-color="#4FB3B8" stop-opacity="0.16"/>
+      <stop offset="48%" stop-color="#4FB3B8" stop-opacity="0.045"/>
+      <stop offset="100%" stop-color="#4FB3B8" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#E6EBF0" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="#FBFCFD"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="url(#grid)" opacity="0.48"/>
+
+  <g transform="translate(72 72)">
+    <rect width="96" height="96" rx="24" fill="#369197"/>
+    <path d="M48 21 72 35 48 49 24 35Z" fill="none" stroke="#FBFCFD" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M24 35v27l24 14 24-14V35M48 49v27" fill="none" stroke="#FBFCFD" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="m48 21 24 14-9 5-15-9-15 9-9-5Z" fill="#4FB3B8"/>
+  </g>
+
+  <text x="192" y="162" fill="#171B23" font-family="Helvetica Neue, Arial, sans-serif" font-size="120" font-weight="700" letter-spacing="-5">NixMC</text>
+
+  <text x="72" y="282" fill="#5A7791" font-family="Helvetica Neue, Arial, sans-serif" font-size="40" font-weight="400" letter-spacing="-0.5">
+    <tspan x="72" dy="0">Manage your Mac by describing the</tspan>
+    <tspan x="72" dy="52">change you want.</tspan>
+  </text>
+
+  <g transform="translate(72 536)">
+    <rect width="230" height="38" rx="19" fill="#369197" opacity="0.09"/>
+    <circle cx="20" cy="19" r="4" fill="#4FB3B8"/>
+    <text x="34" y="25" fill="#369197" font-family="Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="600" letter-spacing="1.8">macOS · nix-darwin</text>
+  </g>
+</svg>

@@ -28,6 +28,9 @@ const {
 } = Astro.props;
 
 const title = pageTitle ? `${pageTitle} | ${SITE_NAME}` : `${SITE_NAME} — describe the change, review the diff`;
+
+// Default social share image (absolute URL, base-aware). Pages may override via socialImageUrl.
+const socialImage = socialImageUrl ?? new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site).href;
 ---
 
 <!doctype html>
@@ -47,14 +50,12 @@ const title = pageTitle ? `${pageTitle} | ${SITE_NAME}` : `${SITE_NAME} — desc
     <meta property="og:url" content={url.href} />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE_NAME} />
-    {socialImageUrl && (
-      <meta property="og:image" content={socialImageUrl} />
-      <meta property="og:image:alt" content={title} />
-    )}
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    {socialImageUrl && <meta name="twitter:image" content={socialImageUrl} />}
+    <meta name="twitter:image" content={socialImage} />
     {schema && (Array.isArray(schema)
       ? schema.map((s) => <Schema item={s} />)
       : <Schema item={schema} />
