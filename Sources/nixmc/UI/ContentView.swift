@@ -106,7 +106,11 @@ struct ContentView: View {
         .onChange(of: searchQuery) { _, q in
             if !q.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { app.ensureSearchIndexed() }
         }
-        .onAppear { app.refresh() }
+        .onAppear {
+            app.refresh()
+            presentDeepLinkedRecipe()
+        }
+        .onChange(of: app.deepLinkedRecipe) { _, _ in presentDeepLinkedRecipe() }
         .onChange(of: app.updateChecking) { _, checking in
             // A check streams its output into the chat transcript (see
             // `runUpdateCheck`); don't let it run invisibly behind whatever
@@ -552,6 +556,19 @@ struct ContentView: View {
     private func seed(_ text: String) {
         draft = text
         inputFocused = true
+    }
+
+    /// Show the recipe requested by a `nixmc://recipe/<id>` deep link as a
+    /// preview sheet — the same sheet users get from the recipe browser — then
+    /// clear the request so it isn't re-presented.
+    private func presentDeepLinkedRecipe() {
+        guard let recipe = app.deepLinkedRecipe else { return }
+        app.deepLinkedRecipe = nil
+        app.showTemplates = false
+        selectedArea = nil
+        showPackages = false
+        app.closeProposal()
+        recipePreview = recipe
     }
 
     /// Toggle a Configure area's starter grid. Re-selecting the open area returns

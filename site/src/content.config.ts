@@ -10,6 +10,10 @@ const recipes = defineCollection({
 		base: "../Sources/nixmc/Resources/recipes",
 	}),
 	schema: z.object({
+		// Stable front-matter id the macOS app keys recipes by (e.g. `ai-rtk`).
+		// Used to build `nixmc://recipe/<id>` deep links; the glob entry `id` is
+		// the file path, which the app doesn't know about.
+		id: z.string().optional(),
 		title: z.string(),
 		section: z.string(),
 		summary: z.string(),

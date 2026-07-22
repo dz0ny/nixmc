@@ -112,6 +112,12 @@ enum RecipeCatalog {
         all.filter { $0.section == section }
     }
 
+    /// Resolve a recipe by its stable front-matter `id` — the key used by
+    /// `nixmc://recipe/<id>` deep links from the website.
+    @MainActor static func recipe(withID id: String) -> Recipe? {
+        all.first { $0.id == id }
+    }
+
     @MainActor static func search(_ query: String) -> [Recipe] {
         let needle = query.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !needle.isEmpty else { return [] }

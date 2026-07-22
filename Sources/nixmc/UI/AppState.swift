@@ -34,6 +34,12 @@ enum Phase: String {
     case ready = "Ready"
 }
 
+extension Notification.Name {
+    /// Posted with `userInfo["id"]` set to a recipe's front-matter id when a
+    /// `nixmc://recipe/<id>` deep link is opened. Observed by `AppState`.
+    static let openRecipe = Notification.Name("nixmc.openRecipe")
+}
+
 @MainActor
 final class AppState: ObservableObject {
     let paths = Paths()
@@ -75,6 +81,11 @@ final class AppState: ObservableObject {
     @Published var workingDiffText = ""
     /// Drives the prompt-templates gallery sheet.
     @Published var showTemplates = false
+
+    /// A recipe requested via a `nixmc://recipe/<id>` deep link. ContentView
+    /// surfaces it as a preview sheet and resets this to nil once shown.
+    @Published var deepLinkedRecipe: Recipe?
+    private var deepLinkObserver: NSObjectProtocol?
 
     /// Agent-generated guide to what the current config actually does,
     /// keyed by section id (`ConfigGuide.sectionIDs`). Loaded lazily the
@@ -154,6 +165,23 @@ final class AppState: ObservableObject {
     private var lastBuildOutput: [String] = []
 
     @Published var host = Paths.hostName()
+
+    init() {
+        // Resolve `nixmc://recipe/<id>` deep links (posted by AppDelegate) to a
+        // concrete recipe. ContentView presents it once the main window exists.
+        deepLinkObserver = NotificationCenter.default.addObserver(
+            forName: .openRecipe, object: nil, queue: .main
+        ) { [weak self] note in
+            MainActor.assumeIsolated {
+                guard let self, let id = note.userInfo?["id"] as? String else { return }
+                self.deepLinkedRecipe = RecipeCatalog.recipe(withID: id)
+            }
+        }
+    }
+
+    deinit {
+        if let deepLinkObserver { NotificationCenter.default.removeObserver(deepLinkObserver) }
+    }
 
     // MARK: status line
 

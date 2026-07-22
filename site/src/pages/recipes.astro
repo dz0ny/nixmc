@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import * as Lucide from "lucide-react";
-import { ArrowUpRight, Link2, Search, Star } from "lucide-react";
+import { AppWindow, ArrowUpRight, Link2, Search, Star } from "lucide-react";
 import { RECIPE_SECTIONS } from "@/recipeSections";
 import { SITE } from "@/config";
 import type { CollectionEntry } from "astro:content";
@@ -26,16 +26,22 @@ const grouped = RECIPE_SECTIONS.map((s) => {
   };
 }).filter((s) => s.items.length > 0);
 
+// Always link to the recipe's own file in the repository (not the upstream
+// `source:` reference), so "Source" shows the exact Markdown that ships.
 function sourceUrl(r: CollectionEntry<"recipes">) {
-  return (
-    r.data.source ??
-    `${SITE.repo}/blob/main/Sources/nixmc/Resources/recipes/${r.id}.md`
-  );
+  return `${SITE.repo}/blob/main/Sources/nixmc/Resources/recipes/${r.id}.md`;
 }
 
 // Stable, URL-safe anchor for deep links, e.g. `ai-agents/rtk` -> `recipe-ai-agents-rtk`.
 function anchorId(r: CollectionEntry<"recipes">) {
   return `recipe-${r.id.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
+}
+
+// Custom-scheme link the macOS app registers. It keys recipes by the front-matter
+// `id`; fall back to the filename (the app's own fallback) when it's absent.
+function appLink(r: CollectionEntry<"recipes">) {
+  const id = r.data.id ?? r.id.split("/").pop() ?? r.id;
+  return `nixmc://recipe/${encodeURIComponent(id)}`;
 }
 
 const schema: WithContext<CollectionPage> = {
@@ -62,7 +68,8 @@ const schema: WithContext<CollectionPage> = {
         These ship inside NixMC and are grouped by the same sections you see in the
         sidebar. Each is source-backed — pick one, review the diff it proposes, and apply.
         <code class="font-mono text-sm text-foreground">featured</code> recipes are the
-        common starting points.
+        common starting points. <span class="text-foreground">Open in app</span> hands a
+        recipe straight to NixMC (requires the app installed).
       </p>
 
       <!-- Search -->
@@ -125,38 +132,40 @@ const schema: WithContext<CollectionPage> = {
                 class="group relative flex scroll-mt-24 flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-medium target:border-brand target:ring-2 target:ring-brand/60"
               >
                 <div class="flex items-start justify-between gap-3">
-                  <h3 class="font-semibold leading-snug">
-                    <a
-                      href={sourceUrl(r)}
-                      target="_blank"
-                      rel="noreferrer"
-                      class="after:absolute after:inset-0 after:content-[''] focus:outline-none"
-                    >
-                      {r.data.title}
-                    </a>
-                  </h3>
+                  <h3 class="font-semibold leading-snug">{r.data.title}</h3>
                   <a
                     href={`#${anchorId(r)}`}
                     data-permalink
                     aria-label={`Copy link to ${r.data.title}`}
                     title="Copy link to this recipe"
-                    class="relative z-10 flex-none rounded-md p-1 text-muted-foreground opacity-0 transition-all hover:bg-secondary hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
+                    class="flex-none rounded-md p-1 text-muted-foreground opacity-0 transition-all hover:bg-secondary hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
                   >
                     <Link2 className="h-4 w-4" />
                   </a>
                 </div>
                 <p class="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{r.data.summary}</p>
-                <div class="mt-4 flex items-center justify-between gap-3">
-                  {r.data.featured ? (
-                    <span class="inline-flex w-fit items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand">
-                      <Star className="h-3 w-3" /> Featured
-                    </span>
-                  ) : (
-                    <span></span>
-                  )}
-                  <span class="relative z-10 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-brand">
-                    Source <ArrowUpRight className="h-3.5 w-3.5" />
+                {r.data.featured && (
+                  <span class="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand">
+                    <Star className="h-3 w-3" /> Featured
                   </span>
+                )}
+                <div class="mt-4 flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+                  <a
+                    href={appLink(r)}
+                    data-app-link
+                    title="Open this recipe in the NixMC app (requires NixMC installed)"
+                    class="inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-[11px] font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
+                  >
+                    <AppWindow className="h-3.5 w-3.5" /> Open in app
+                  </a>
+                  <a
+                    href={sourceUrl(r)}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-brand"
+                  >
+                    Source <ArrowUpRight className="h-3.5 w-3.5" />
+                  </a>
                 </div>
               </article>
             ))}

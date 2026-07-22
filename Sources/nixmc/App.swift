@@ -38,6 +38,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     }
 
+    func application(_ application: NSApplication, open urls: [URL]) {
+        for url in urls where url.scheme == "nixmc" {
+            handleDeepLink(url)
+        }
+    }
+
+    /// `nixmc://recipe/<id>` — bring the main window forward and ask AppState to
+    /// present the recipe. AppState resolves the id whether or not the window
+    /// exists yet, so cold-start launches work too.
+    private func handleDeepLink(_ url: URL) {
+        guard url.host == "recipe" else { return }
+        let id = url.pathComponents.first { $0 != "/" && !$0.isEmpty }
+        guard let id, !id.isEmpty else { return }
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        NotificationCenter.default.post(name: .showMainWindow, object: nil)
+        NotificationCenter.default.post(name: .openRecipe, object: nil, userInfo: ["id": id])
+    }
+
     func applicationShouldHandleReopen(
         _ sender: NSApplication,
         hasVisibleWindows flag: Bool
