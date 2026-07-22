@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import * as Lucide from "lucide-react";
-import { ArrowUpRight, Star } from "lucide-react";
+import { ArrowUpRight, Link2, Search, Star } from "lucide-react";
 import { RECIPE_SECTIONS } from "@/recipeSections";
 import { SITE } from "@/config";
 import type { CollectionEntry } from "astro:content";
@@ -33,6 +33,11 @@ function sourceUrl(r: CollectionEntry<"recipes">) {
   );
 }
 
+// Stable, URL-safe anchor for deep links, e.g. `ai-agents/rtk` -> `recipe-ai-agents-rtk`.
+function anchorId(r: CollectionEntry<"recipes">) {
+  return `recipe-${r.id.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
+}
+
 const schema: WithContext<CollectionPage> = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
@@ -60,11 +65,28 @@ const schema: WithContext<CollectionPage> = {
         common starting points.
       </p>
 
+      <!-- Search -->
+      <div class="mt-8 max-w-xl">
+        <label class="relative block">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            id="recipe-search"
+            type="search"
+            autocomplete="off"
+            placeholder={`Search ${total} recipes by name, summary, or section…`}
+            aria-label="Search recipes"
+            class="w-full rounded-full border border-border bg-card/70 py-3 pl-10 pr-4 text-sm shadow-soft backdrop-blur placeholder:text-muted-foreground focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/40"
+          />
+        </label>
+        <p id="recipe-search-status" class="mt-2 min-h-5 px-1 text-xs text-muted-foreground" aria-live="polite"></p>
+      </div>
+
       <!-- Section jump nav -->
-      <nav class="mt-8 flex flex-wrap gap-2">
+      <nav class="mt-6 flex flex-wrap gap-2" data-jump-nav>
         {grouped.map((s) => (
           <a
             href={`#${s.slug}`}
+            data-jump={s.slug}
             class="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/70 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur transition-colors hover:text-foreground"
           >
             {s.name}
@@ -76,9 +98,14 @@ const schema: WithContext<CollectionPage> = {
   </section>
 
   <div class="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+    <!-- Empty state (shown by JS when a search matches nothing) -->
+    <p id="recipe-empty" hidden class="rounded-2xl border border-dashed border-border bg-card/50 px-6 py-16 text-center text-muted-foreground">
+      No recipes match your search. Try a broader term.
+    </p>
+
     <div class="space-y-16">
       {grouped.map((s) => (
-        <section id={s.slug} class="scroll-mt-20">
+        <section id={s.slug} data-section-slug={s.slug} class="scroll-mt-20">
           <div class="flex items-center gap-3 border-b border-border pb-4">
             <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand">
               <s.Icon className="h-5 w-5" />
@@ -89,27 +116,124 @@ const schema: WithContext<CollectionPage> = {
 
           <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {s.items.map((r) => (
-              <a
-                href={sourceUrl(r)}
-                target="_blank"
-                rel="noreferrer"
-                class="group flex flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-medium"
+              <article
+                id={anchorId(r)}
+                data-recipe
+                data-title={r.data.title.toLowerCase()}
+                data-summary={r.data.summary.toLowerCase()}
+                data-section={r.data.section.toLowerCase()}
+                class="group relative flex scroll-mt-24 flex-col rounded-2xl border border-border bg-card p-5 shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-medium target:border-brand target:ring-2 target:ring-brand/60"
               >
                 <div class="flex items-start justify-between gap-3">
-                  <h3 class="font-semibold leading-snug">{r.data.title}</h3>
-                  <ArrowUpRight className="h-4 w-4 flex-none text-muted-foreground transition-colors group-hover:text-brand" />
+                  <h3 class="font-semibold leading-snug">
+                    <a
+                      href={sourceUrl(r)}
+                      target="_blank"
+                      rel="noreferrer"
+                      class="after:absolute after:inset-0 after:content-[''] focus:outline-none"
+                    >
+                      {r.data.title}
+                    </a>
+                  </h3>
+                  <a
+                    href={`#${anchorId(r)}`}
+                    data-permalink
+                    aria-label={`Copy link to ${r.data.title}`}
+                    title="Copy link to this recipe"
+                    class="relative z-10 flex-none rounded-md p-1 text-muted-foreground opacity-0 transition-all hover:bg-secondary hover:text-brand focus-visible:opacity-100 group-hover:opacity-100"
+                  >
+                    <Link2 className="h-4 w-4" />
+                  </a>
                 </div>
                 <p class="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{r.data.summary}</p>
-                {r.data.featured && (
-                  <span class="mt-4 inline-flex w-fit items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand">
-                    <Star className="h-3 w-3" /> Featured
+                <div class="mt-4 flex items-center justify-between gap-3">
+                  {r.data.featured ? (
+                    <span class="inline-flex w-fit items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand">
+                      <Star className="h-3 w-3" /> Featured
+                    </span>
+                  ) : (
+                    <span></span>
+                  )}
+                  <span class="relative z-10 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-brand">
+                    Source <ArrowUpRight className="h-3.5 w-3.5" />
                   </span>
-                )}
-              </a>
+                </div>
+              </article>
             ))}
           </div>
         </section>
       ))}
     </div>
   </div>
+
+  <script is:inline>
+    (() => {
+      const input = document.getElementById("recipe-search");
+      const status = document.getElementById("recipe-search-status");
+      const empty = document.getElementById("recipe-empty");
+      const cards = Array.from(document.querySelectorAll("[data-recipe]"));
+      const sections = Array.from(document.querySelectorAll("[data-section-slug]"));
+      const jumpLinks = Array.from(document.querySelectorAll("[data-jump]"));
+
+      function apply(raw) {
+        const q = raw.trim().toLowerCase();
+        let visible = 0;
+
+        for (const card of cards) {
+          const hit =
+            !q ||
+            card.dataset.title.includes(q) ||
+            card.dataset.summary.includes(q) ||
+            card.dataset.section.includes(q);
+          card.hidden = !hit;
+          if (hit) visible++;
+        }
+
+        // Hide sections (and their jump chips) that have no visible cards.
+        const liveSlugs = new Set();
+        for (const section of sections) {
+          const anyVisible = section.querySelector("[data-recipe]:not([hidden])");
+          section.hidden = !anyVisible;
+          if (anyVisible) liveSlugs.add(section.dataset.sectionSlug);
+        }
+        for (const link of jumpLinks) {
+          link.hidden = q ? !liveSlugs.has(link.dataset.jump) : false;
+        }
+
+        if (empty) empty.hidden = visible > 0;
+        if (status) {
+          status.textContent = q
+            ? `${visible} recipe${visible === 1 ? "" : "s"} match “${raw.trim()}”`
+            : "";
+        }
+      }
+
+      if (input) {
+        input.addEventListener("input", (e) => apply(e.target.value));
+        // Support ?q= and /recipes/?q=term for shareable searches.
+        const params = new URLSearchParams(location.search);
+        const initial = params.get("q");
+        if (initial) {
+          input.value = initial;
+          apply(initial);
+        }
+      }
+
+      // Permalink: copy the deep link to the clipboard (native anchor still sets the hash).
+      for (const link of document.querySelectorAll("[data-permalink]")) {
+        link.addEventListener("click", () => {
+          const url = location.origin + location.pathname + link.getAttribute("href");
+          navigator.clipboard?.writeText(url).then(
+            () => {
+              if (status) {
+                status.textContent = "Link copied to clipboard";
+                setTimeout(() => apply(input ? input.value : ""), 1500);
+              }
+            },
+            () => {},
+          );
+        });
+      }
+    })();
+  </script>
 </Layout>
