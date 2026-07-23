@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import Hero from "@/components/Hero.astro";
+import WorksWith from "@/components/WorksWith.astro";
 import Features from "@/components/Features.astro";
 import HowItWorks from "@/components/HowItWorks.astro";
 import Recipes from "@/components/Recipes.astro";
@@ -26,6 +27,7 @@ const schema: WithContext<SoftwareApplication> = {
 
 <Layout schema={schema}>
   <Hero />
+  <WorksWith />
   <Features />
   <HowItWorks />
   <Recipes />

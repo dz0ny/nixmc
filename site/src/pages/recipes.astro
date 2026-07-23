@@ -54,7 +54,7 @@ const schema: WithContext<CollectionPage> = {
 
 <Layout
   title={`Browse ${total} built-in nix-darwin configuration recipes`}
-  description={`All ${total} built-in NixMC recipes — macOS settings, packages, shell, services, security, fonts, AI agents, and persona kits — with source links.`}
+  description={`All ${total} built-in NixMC recipes across macOS settings, packages, shell, services, security, fonts, AI agents, and persona kits, with source links.`}
   schema={schema}
 >
   <!-- Header -->
@@ -66,7 +66,7 @@ const schema: WithContext<CollectionPage> = {
       </h1>
       <p class="mt-4 max-w-2xl text-lg leading-relaxed text-muted-foreground">
         These ship inside NixMC and are grouped by the same sections you see in the
-        sidebar. Each is source-backed — pick one, review the diff it proposes, and apply.
+        sidebar. Each is source-backed: pick one, review the diff it proposes, and apply.
         <code class="font-mono text-sm text-foreground">featured</code> recipes are the
         common starting points. <span class="text-foreground">Open in app</span> hands a
         recipe straight to NixMC (requires the app installed).

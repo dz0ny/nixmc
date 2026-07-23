@@ -16,7 +16,7 @@ interface Props {
 
 const SITE_NAME = "NixMC";
 const SITE_DESCRIPTION =
-	"Manage your Mac by describing the change you want. A native menu-bar app that puts a coding agent in front of your nix-darwin configuration — with a diff you review before anything applies.";
+	"Manage your Mac by describing the change you want. A native menu-bar app that puts a coding agent in front of your nix-darwin configuration, with a diff you review before anything applies.";
 
 const { url } = Astro;
 const {
@@ -27,7 +27,7 @@ const {
 	schema,
 } = Astro.props;
 
-const title = pageTitle ? `${pageTitle} | ${SITE_NAME}` : `${SITE_NAME} — describe the change, review the diff`;
+const title = pageTitle ? `${pageTitle} | ${SITE_NAME}` : `${SITE_NAME} · describe the change, review the diff`;
 
 // Default social share image (absolute URL, base-aware). Pages may override via socialImageUrl.
 const socialImage = socialImageUrl ?? new URL(`${import.meta.env.BASE_URL}og.png`, Astro.site).href;
@@ -38,12 +38,19 @@ const socialImage = socialImageUrl ?? new URL(`${import.meta.env.BASE_URL}og.png
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem("theme");
+        const dark = stored ? stored === "dark" : true;
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
     <link rel="canonical" href={url.href} />
     <Font cssVariable="--font-grotesk" preload />
     <Font cssVariable="--font-mono-code" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#1c2029" />
+    <meta name="theme-color" content="#0d1117" />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />

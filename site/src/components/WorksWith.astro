@@ -1,0 +1,45 @@
+---
+import { ShieldCheck, GitBranch, KeyRound, Bot, Terminal, Package, Boxes } from "lucide-react";
+
+const trust = [
+  { icon: ShieldCheck, label: "Signed & notarized", sub: "Ships as a notarized DMG" },
+  { icon: GitBranch, label: "Git-backed rollback", sub: "Every change is committed" },
+  { icon: KeyRound, label: "No AI API key", sub: "Uses the agent on your Mac" },
+];
+
+const tools = [
+  { icon: Bot, label: "Claude Code" },
+  { icon: Terminal, label: "Codex CLI" },
+  { icon: Boxes, label: "nix-darwin" },
+  { icon: Package, label: "Homebrew" },
+  { icon: GitBranch, label: "Git" },
+];
+---
+
+<section class="border-y border-border bg-muted/30">
+  <div class="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-14">
+    <dl class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+      {trust.map((t) => (
+        <div class="flex items-start gap-3">
+          <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-brand-soft text-brand">
+            <t.icon className="h-4 w-4" />
+          </span>
+          <div>
+            <dt class="text-sm font-semibold">{t.label}</dt>
+            <dd class="text-xs leading-relaxed text-muted-foreground">{t.sub}</dd>
+          </div>
+        </div>
+      ))}
+    </dl>
+
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-3 lg:justify-end">
+      <span class="text-xs font-medium uppercase tracking-wider text-muted-foreground">Works with</span>
+      {tools.map((tool) => (
+        <span class="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-xs font-medium text-foreground shadow-soft">
+          <tool.icon className="h-3.5 w-3.5 text-steel" />
+          {tool.label}
+        </span>
+      ))}
+    </div>
+  </div>
+</section>
