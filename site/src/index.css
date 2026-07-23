@@ -49,6 +49,9 @@
   --color-brand-soft: hsl(var(--brand-soft));
   --color-ink: hsl(var(--ink));
   --color-steel: hsl(var(--steel));
+  /* Constant deep surface for inverted panels (same in light + dark) */
+  --color-panel: hsl(var(--panel));
+  --color-panel-foreground: hsl(var(--panel-foreground));
 
   --background-image-grid: var(--grid);
   --background-image-gradient-hero: var(--gradient-hero);
@@ -56,6 +59,7 @@
   --shadow-soft: var(--shadow-soft);
   --shadow-medium: var(--shadow-medium);
   --shadow-lift: var(--shadow-lift);
+  --shadow-glow: var(--shadow-glow);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
@@ -68,6 +72,8 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-rise: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade: fade 0.9s ease both;
+  --animate-caret: caret 1.1s steps(1) infinite;
+  --animate-float: float 7s ease-in-out infinite;
 
   @keyframes accordion-down {
     from { height: 0; }
@@ -84,6 +90,13 @@
   @keyframes fade {
     from { opacity: 0; }
     to { opacity: 1; }
+  }
+  @keyframes caret {
+    50% { opacity: 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
 }
 
@@ -111,6 +124,10 @@
 
     /* Charcoal ink from the icon frame */
     --ink: 220 22% 14%;
+
+    /* Constant deep panel (never flips with theme) */
+    --panel: 222 32% 9%;
+    --panel-foreground: 210 22% 95%;
 
     --primary: 220 24% 14%;
     --primary-foreground: 210 24% 99%;
@@ -148,17 +165,18 @@
     --shadow-soft: 0 1px 2px hsl(220 24% 12% / 0.05), 0 6px 20px hsl(220 24% 12% / 0.05);
     --shadow-medium: 0 2px 6px hsl(220 24% 12% / 0.06), 0 14px 40px hsl(220 24% 12% / 0.09);
     --shadow-lift: 0 30px 70px -20px hsl(185 40% 20% / 0.28);
+    --shadow-glow: 0 0 0 1px hsl(214 20% 91%), 0 30px 80px -24px hsl(185 40% 20% / 0.35);
   }
 
   .dark {
-    --background: 220 24% 8%;
-    --foreground: 210 20% 96%;
+    --background: 222 26% 7%;
+    --foreground: 210 22% 95%;
 
-    --card: 220 22% 11%;
-    --card-foreground: 210 20% 96%;
+    --card: 220 22% 10.5%;
+    --card-foreground: 210 22% 95%;
 
-    --popover: 220 22% 11%;
-    --popover-foreground: 210 20% 96%;
+    --popover: 220 22% 10.5%;
+    --popover-foreground: 210 22% 95%;
 
     --ink: 210 20% 96%;
 
@@ -187,14 +205,20 @@
     --ring: 183 52% 52%;
 
     --grid:
-      linear-gradient(to right, hsl(210 30% 70% / 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, hsl(210 30% 70% / 0.05) 1px, transparent 1px);
+      linear-gradient(to right, hsl(210 30% 70% / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(210 30% 70% / 0.045) 1px, transparent 1px);
     --gradient-hero:
-      radial-gradient(60% 55% at 50% 0%, hsl(183 52% 52% / 0.16), transparent 70%);
+      radial-gradient(50% 45% at 78% 8%, hsl(183 60% 50% / 0.18), transparent 60%),
+      radial-gradient(60% 50% at 15% 0%, hsl(205 55% 45% / 0.14), transparent 62%),
+      radial-gradient(80% 60% at 50% -10%, hsl(222 40% 20% / 0.5), transparent 70%);
 
     --shadow-soft: 0 1px 2px hsl(0 0% 0% / 0.3), 0 6px 20px hsl(0 0% 0% / 0.35);
     --shadow-medium: 0 2px 6px hsl(0 0% 0% / 0.4), 0 14px 40px hsl(0 0% 0% / 0.5);
-    --shadow-lift: 0 30px 70px -20px hsl(0 0% 0% / 0.6);
+    --shadow-lift: 0 40px 90px -28px hsl(0 0% 0% / 0.7);
+    --shadow-glow:
+      0 0 0 1px hsl(220 16% 22%),
+      0 0 60px -12px hsl(183 60% 50% / 0.35),
+      0 40px 90px -30px hsl(0 0% 0% / 0.8);
   }
 }
 
